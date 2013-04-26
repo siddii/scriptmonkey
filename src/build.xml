@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="ScriptMonkey" basedir=".">
+
+  <xmlproperty file="META-INF/plugin.xml" validate="false"/>
+
+  <property name="sourceZip" value="./${ant.project.name}_src_${idea-plugin.version}.zip"/>
+
+  <property name="jsSource" value="./main/resources/js"/>
+  <property name="jsJar" value="./main/resources/lib/js.jar"/>
+
+  <target name="updateJSJar">
+    <echo>Updating ${jsJar} ...</echo>
+    <zip basedir="${jsSource}" file="${jsJar}">
+      <include name="**/*.js"/>
+    </zip>
+  </target>
+
+  <target name="createSourceZip">
+    <echo>Creating zip file ${sourceZip}...</echo>
+    <zip basedir="." file="${sourceZip}">
+      <exclude name="**/*.class"/>
+    </zip>
+  </target>
+</project>
