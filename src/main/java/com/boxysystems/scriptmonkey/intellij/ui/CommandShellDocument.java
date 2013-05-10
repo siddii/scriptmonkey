@@ -9,8 +9,7 @@ public class CommandShellDocument extends PlainDocument {
 
   public void insertString(int offset, String text, AttributeSet a)
     throws BadLocationException {
-    int len = getLength();
-    super.insertString(len, text, a);
+    super.insertString(getLength(), text, a);
   }
 
   public void remove(int offs, int len) throws BadLocationException {

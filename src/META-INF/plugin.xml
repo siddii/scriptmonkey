@@ -35,15 +35,15 @@
       
     <![CDATA[
       <ul>
-      <u>Version 0.7 changes:</u>
-        <li>Compatible with IntelliJ v11</li>
+      <u>Version 1.0 changes:</u>
+        <li>Compatible with IntelliJ v12</li>
       </ul>
       <ul>
     ]]>
   </change-notes>
   <version>1.0</version>
   <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
-  <idea-version since-build="111.69"/>
+  <idea-version since-build="122.519"/>
 
   <application-components>
     <component>

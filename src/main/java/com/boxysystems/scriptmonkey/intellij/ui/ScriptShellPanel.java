@@ -121,13 +121,18 @@ public class ScriptShellPanel extends JPanel {
     }
   }
 
-  public void println(String s) {
-    Document d = editor.getDocument();
-    try {
-      d.insertString(d.getLength(), s + "\n", null);
-    } catch (BadLocationException e) {
-      e.printStackTrace();
-    }
+  public void println(final String s) {
+    SwingUtilities.invokeLater(new Runnable(){
+        @Override
+        public void run() {
+            Document d = editor.getDocument();
+            try {
+                d.insertString(d.getLength(), s + "\n", null);
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+    });
   }
 
   //TODO: Need to implement this
