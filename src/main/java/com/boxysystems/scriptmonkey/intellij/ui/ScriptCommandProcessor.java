@@ -19,6 +19,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
+import javax.swing.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -85,17 +86,23 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
     }
   }
 
-  private void evaluateScriptFile(File scriptFile, ScriptProcessorCallback callback) {
-    try {
-      initScriptingEngineAndRunGlobalScripts();
-      if (scriptFile != null) {
-        logger.info("Evaluating script file '" + scriptFile + "' ...");
-        engine.eval(new FileReader(scriptFile));
-      }
-      callback.success();
-    } catch (Throwable e) {
-      callback.failure(e);
-    }
+  private void evaluateScriptFile(final File scriptFile, final ScriptProcessorCallback callback) {
+      SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+              try {
+                  initScriptingEngineAndRunGlobalScripts();
+                  if (scriptFile != null) {
+                      logger.info("Evaluating script file '" + scriptFile + "' ...");
+                      engine.eval(new FileReader(scriptFile));
+                  }
+                  callback.success();
+              } catch (Throwable e) {
+                  callback.failure(e);
+              }
+
+          }
+      });
   }
 
   public ScriptRunningTask processScript(final String scriptContent, final ScriptProcessorCallback callback) {
@@ -176,8 +183,7 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
     try {
       ScriptMonkeyApplicationComponent applicationComponent = ApplicationManager.getApplication().getComponent(ScriptMonkeyApplicationComponent.class);
       File jsFolder = new File(applicationComponent.getSettings().getHomeFolder(), Constants.JS_FOLDER_NAME);
-      File globalScripts = new File(jsFolder, "global");
-
+      final File globalScripts = new File(jsFolder, "global");
       if (globalScripts.exists()) {
         File[] jsFiles = globalScripts.listFiles(new JSFileFilter());
         for (File jsFile : jsFiles) {
@@ -197,7 +203,22 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
     }
   }
 
-  private Bindings createGlobalBindings() {
+    private void executeScripts(File globalScripts) {
+        File[] jsFiles = globalScripts.listFiles(new JSFileFilter());
+        for (File jsFile : jsFiles) {
+          try {
+            logger.info("Evaluating script '" + jsFile + "' ...");
+            engine.eval(new FileReader(jsFile));
+            logger.info("Script successfully processed !");
+          } catch (ScriptException e) {
+            logger.error("Error executing script '" + jsFile + "'", e);
+          } catch (FileNotFoundException e) {
+            logger.error("Unable to find script file '" + jsFile + "' !");
+          }
+        }
+    }
+
+    private Bindings createGlobalBindings() {
     Map<String, Object> map =
       Collections.synchronizedMap(new HashMap<String, Object>());
     return new SimpleBindings(map);
@@ -238,23 +259,29 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
 
 
     public void run(ProgressIndicator indicator) {
-      executor = Executors.newFixedThreadPool(1);
-      executor.execute(new Runnable() {
-        public void run() {
-          initScriptingEngineAndRunGlobalScripts();
-          try {
+        SwingUtilities.invokeLater(new Runnable(){
+            @Override
+            public void run() {
+                executor = Executors.newFixedThreadPool(1);
+                executor.execute(new Runnable() {
+                    public void run() {
+                        initScriptingEngineAndRunGlobalScripts();
+                        try {
 
-            if (scriptContent != null) {
-              logger.info("Evaluating script ...");
-              engine.eval(scriptContent);
+                            if (scriptContent != null) {
+                                logger.info("Evaluating script ...");
+                                engine.eval(scriptContent);
+                            }
+                            callback.success();
+                        } catch (Throwable e) {
+                            callback.failure(e);
+                        }
+
+                    }
+                });
             }
-            callback.success();
-          } catch (Throwable e) {
-            callback.failure(e);
-          }
+        });
 
-        }
-      });
     }
   }
 }
