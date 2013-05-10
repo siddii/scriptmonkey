@@ -123,7 +123,7 @@ public class ScriptMonkeyApplicationComponent implements ApplicationComponent, C
   }
 
   public static ScriptMonkeyApplicationComponent getInstance() {
-    return ApplicationManager.getApplication().getComponent(ScriptMonkeyApplicationComponent.class);
+    return (ScriptMonkeyApplicationComponent)ApplicationManager.getApplication().getPicoContainer().getComponentInstancesOfType(ScriptMonkeyApplicationComponent.class).get(0);
   }
 
   public ScriptMonkeySettings getSettings() {

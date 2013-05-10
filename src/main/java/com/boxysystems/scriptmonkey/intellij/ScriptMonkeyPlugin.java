@@ -29,18 +29,11 @@ public class ScriptMonkeyPlugin implements ProjectComponent {
 
   private ScriptMonkeyToolWindow toolWindow = null;
 
-  private IdeaPluginDescriptor pluginDescriptor;
-
   private ScriptShellPanel commandShellPanel;
 
 
   public ScriptMonkeyPlugin(Project project) throws MalformedURLException {
     this.project = project;
-    initPluginDescriptor();
-  }
-
-  private void initPluginDescriptor() {
-    pluginDescriptor = PluginManager.getPlugin(PluginId.getId(Constants.PLUGIN_ID));
   }
 
   public void projectOpened() {
@@ -90,10 +83,6 @@ public class ScriptMonkeyPlugin implements ProjectComponent {
 
   public static ScriptMonkeyPlugin getInstance(Project project) {
     return project.getComponent(ScriptMonkeyPlugin.class);
-  }
-
-  public String toString() {
-    return "Name:" + pluginDescriptor.getName() + ",Version:" + pluginDescriptor.getVersion() + ",Vendor:" + pluginDescriptor.getVendor();
   }
 
   public ScriptShellPanel getCommandShellPanel() {

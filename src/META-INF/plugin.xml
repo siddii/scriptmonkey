@@ -1,5 +1,5 @@
-<!--<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">-->
-<idea-plugin url="http://code.google.com/p/scriptmonkey/">
+<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">
+<idea-plugin url="https://github.com/siddii/scriptmonkey">
   <name>Script Monkey</name>
   <description>
     <![CDATA[
@@ -41,7 +41,7 @@
       <ul>
     ]]>
   </change-notes>
-  <version>0.7</version>
+  <version>1.0</version>
   <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
   <idea-version since-build="111.69"/>
 
@@ -75,8 +75,5 @@
       <separator/>
       <action class="com.boxysystems.scriptmonkey.intellij.action.OpenHelpAction" text="Help" id="ScriptMonkey.MainMenu.Help"/>
     </group>
-
   </actions>
-
-
 </idea-plugin>
