@@ -15,3 +15,7 @@ Instead of explaining what this plugin can do in words, we wanted to show some i
 * [Say 'Hello' to Rhino](http://scriptmonkey.boxysystems.com/demos/HelloRhino/HelloRhino.htm)
 * [Let's do some command shell scripting](http://scriptmonkey.boxysystems.com/demos/CommandShell/CommandShell.htm)
 * [Timebar plugin script](http://scriptmonkey.boxysystems.com/demos/TimebarPluginScript/TimebarPluginScript.htm)
+
+Where is all the old code?
+--------------------------
+If you are looking for older code of this project, please head to the project's [Google code](https://code.google.com/p/scriptmonkey/) repository
