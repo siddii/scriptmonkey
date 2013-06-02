@@ -88,7 +88,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
 
   private void evaluateScriptFile(final File scriptFile, final ScriptProcessorCallback callback) {
       SwingUtilities.invokeLater(new Runnable() {
-          @Override
           public void run() {
               try {
                   initScriptingEngineAndRunGlobalScripts();
@@ -260,7 +259,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
 
     public void run(ProgressIndicator indicator) {
         SwingUtilities.invokeLater(new Runnable(){
-            @Override
             public void run() {
                 executor = Executors.newFixedThreadPool(1);
                 executor.execute(new Runnable() {

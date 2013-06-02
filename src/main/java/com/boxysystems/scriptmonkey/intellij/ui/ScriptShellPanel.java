@@ -123,7 +123,6 @@ public class ScriptShellPanel extends JPanel {
 
   public void println(final String s) {
     SwingUtilities.invokeLater(new Runnable(){
-        @Override
         public void run() {
             Document d = editor.getDocument();
             try {
