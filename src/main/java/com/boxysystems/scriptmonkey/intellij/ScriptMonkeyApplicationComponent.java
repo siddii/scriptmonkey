@@ -4,12 +4,10 @@ import com.boxysystems.scriptmonkey.intellij.action.CopyScriptsOnStartupAction;
 import com.boxysystems.scriptmonkey.intellij.icons.Icons;
 import com.boxysystems.scriptmonkey.intellij.ui.PluginScript;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptMonkeyConfigurationForm;
-import com.boxysystems.scriptmonkey.intellij.util.SerializationUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.Project;
 import org.apache.log4j.Logger;
@@ -20,7 +18,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.IOException;
 
 public class ScriptMonkeyApplicationComponent implements ApplicationComponent, Configurable {
 
@@ -28,7 +25,7 @@ public class ScriptMonkeyApplicationComponent implements ApplicationComponent, C
 
   private static final Logger logger = Logger.getLogger(ScriptMonkeyApplicationComponent.class);
 
-  private ScriptMonkeySettings settings = new ScriptMonkeySettings();
+  private ScriptMonkeySettings settings = null;
   private PluginScriptRunner pluginScriptRunner = new PluginScriptRunner();
 
   private File settingsFile = null;
@@ -43,7 +40,13 @@ public class ScriptMonkeyApplicationComponent implements ApplicationComponent, C
     return this.getClass().getName();
   }
 
-  public void initComponent() {
+    public void setSettings(ScriptMonkeySettings settings) {
+        System.out.println("######### settings " + settings);
+        this.settings = settings;
+    }
+
+    public void initComponent() {
+      System.out.println("########  ScriptMonkeyApplicationComponent.initComponent");
     initSettings();
     copyScriptsAction = new CopyScriptsOnStartupAction();
     copyScriptsAction.copyScripts(new File(settings.getHomeFolder()));
@@ -51,13 +54,8 @@ public class ScriptMonkeyApplicationComponent implements ApplicationComponent, C
   }
 
   private void initSettings() {
-    File configDir = setupConfigDir();
-    if (configDir != null) {
-      settingsFile = new File(configDir, Constants.SETTINGS_FILE_NAME);
-      if (settingsFile.exists()) {
-        settings = (ScriptMonkeySettings) SerializationUtil.fromXml(settingsFile.getAbsolutePath());
-      }
-    }
+      System.out.println("###########   ScriptMonkeyApplicationComponent.initSettings");
+      settings =  ScriptMonkeySettings.getInstance();
   }
 
   private File setupConfigDir() {
@@ -108,7 +106,7 @@ public class ScriptMonkeyApplicationComponent implements ApplicationComponent, C
       for (Project project : projects) {
         ScriptMonkeyPlugin.getInstance(project).getCommandShellPanel().applySettings(settings);
       }
-      SerializationUtil.toXml(settingsFile.getAbsolutePath(), settings);
+//      SerializationUtil.toXml(settingsFile.getAbsolutePath(), settings);
     }
   }
 
@@ -123,7 +121,7 @@ public class ScriptMonkeyApplicationComponent implements ApplicationComponent, C
   }
 
   public static ScriptMonkeyApplicationComponent getInstance() {
-    return (ScriptMonkeyApplicationComponent)ApplicationManager.getApplication().getPicoContainer().getComponentInstancesOfType(ScriptMonkeyApplicationComponent.class).get(0);
+    return ApplicationManager.getApplication().getComponent(ScriptMonkeyApplicationComponent.class);
   }
 
   public ScriptMonkeySettings getSettings() {

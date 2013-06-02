@@ -1,5 +1,7 @@
 package com.boxysystems.scriptmonkey.intellij.ui;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+
 import java.io.Serializable;
 import java.util.*;
 

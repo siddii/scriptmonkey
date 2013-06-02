@@ -16,7 +16,6 @@
       It's an <b>all-in-one</b> plugin which means, anything that was possible only by writing a plugin can be done using
       <b>plugin-scripts(simple javascript code)</b>. And, any tasks that makes more sense to be scripted can be
       implemented using this tool.<br/>
-      Note: Support for other dynamic languages like Python, Ruby etc. will be available in the future releases.
       </p>
       <p>
       Instead of explaining what this plugin can do in words, we wanted to show some in action.
@@ -40,13 +39,13 @@
       
     <![CDATA[
       <ul>
-      <u>Version 1.0 changes:</u>
-        <li>Compatible with IntelliJ v12</li>
+      <u>Version 1.0.1 changes:</u>
+        <li>Compatible with IntelliJ v12 Community Edition</li>
       </ul>
       <ul>
     ]]>
   </change-notes>
-  <version>1.0</version>
+  <version>1.0.1</version>
   <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
   <idea-version since-build="122.519"/>
 
@@ -54,6 +53,9 @@
     <component>
         <implementation-class>com.boxysystems.scriptmonkey.intellij.ScriptMonkeyApplicationComponent</implementation-class>
     </component>
+      <component>
+          <implementation-class>com.boxysystems.scriptmonkey.intellij.ScriptMonkeySettings</implementation-class>
+      </component>
   </application-components>
 
 
