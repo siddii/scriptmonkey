@@ -1,12 +1,10 @@
 package com.boxysystems.scriptmonkey.intellij.action;
 
 import com.boxysystems.scriptmonkey.intellij.ScriptMonkeyPlugin;
-import com.boxysystems.scriptmonkey.intellij.util.ProjectUtil;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptMonkeyToolWindow;
+import com.boxysystems.scriptmonkey.intellij.util.ProjectUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 
 /**

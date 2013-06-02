@@ -3,7 +3,7 @@ package com.boxysystems.scriptmonkey.intellij.util;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.project.Project;
 
 /**
@@ -15,11 +15,11 @@ import com.intellij.openapi.project.Project;
 public class ProjectUtil {
 
   public static Project getProject(AnActionEvent anActionEvent) {
-    return DataKeys.PROJECT.getData(anActionEvent.getDataContext());
+    return LangDataKeys.PROJECT.getData(anActionEvent.getDataContext());
   }
 
   public static Project getProject() {
     DataContext dataContext = DataManager.getInstance().getDataContext();
-    return DataKeys.PROJECT.getData(dataContext);
+    return LangDataKeys.PROJECT.getData(dataContext);
   }
 }

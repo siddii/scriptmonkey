@@ -1,11 +1,10 @@
 package com.boxysystems.scriptmonkey.intellij.action;
 
-import com.boxysystems.scriptmonkey.intellij.icons.Icons;
 import com.boxysystems.scriptmonkey.intellij.ScriptMonkeyApplicationComponent;
+import com.boxysystems.scriptmonkey.intellij.icons.Icons;
 import com.boxysystems.scriptmonkey.intellij.util.ProjectUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
 
