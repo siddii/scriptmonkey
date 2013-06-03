@@ -1,6 +1,11 @@
 <!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">
-<idea-plugin url="https://github.com/siddii/scriptmonkey">
+<idea-plugin version="2" url="https://github.com/siddii/scriptmonkey">
   <name>Script Monkey</name>
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.lang</depends>
+  <depends>com.intellij.modules.vcs</depends>
+  <depends>com.intellij.modules.xml</depends>
+  <depends>com.intellij.modules.xdebugger</depends>
   <description>
     <![CDATA[
       <p>

@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.peer.PeerFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
@@ -35,7 +34,7 @@ public class ScriptMonkeyToolWindow {
 
         ScriptShellTabContent scriptShellTabContent = new ScriptShellTabContent(scriptShellPanel);
 
-        ContentFactory contentFactory = PeerFactory.getInstance().getContentFactory();
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
 
         Content content = contentFactory.createContent(scriptShellTabContent, contentName, false);
         toolWindow.getContentManager().addContent(content);
