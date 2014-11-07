@@ -56,7 +56,7 @@ public class ScriptMonkeyConfigurationForm {
     btnBrowseHomeDir.addActionListener(new ActionListener() {
 
       public void actionPerformed(ActionEvent e) {
-        final VirtualFile[] files = FileChooser.chooseFiles(getRootComponent(), fileChooserDescriptor);
+        final VirtualFile[] files = FileChooser.chooseFiles(fileChooserDescriptor, getRootComponent(), null, null);
         if (files.length == 1) {
           String filePath = files[0].getPresentableUrl();
           txtHomeFolder.setText(filePath);
