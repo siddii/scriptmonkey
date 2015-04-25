@@ -27,7 +27,12 @@
 
 // Modified by Siddique Hameed to include docString metadata
 // Modified date: 10/21/2008
- 
+
+//load("nashorn:mozilla_compat.js");
+
+var File = Java.type("java.io.File");
+var FileInputStream = Java.type("java.io.FileInputStream");
+
 function JSInvoker(obj) {
 	return new JSAdapter({
 			__get__ : function(name) {
@@ -186,8 +191,8 @@ var err = java.lang.System.err;
 var inp = java.lang.System["in"];
 
 // useful imports for often used io, net classes
-importPackage(java.io);
-importPackage(java.net);
+//importPackage(java.io);
+//importPackage(java.net);
 
 /**
  * Generic any object to input stream mapper
@@ -208,7 +213,7 @@ function inStream(str) {
 		} catch (e) {
 		}		
 		if (file && file.exists()) {
-			return new FileInputStream(file);
+			return new java.io.FileInputStream(file);
 		} else {
 			try {
 				// treat the string as URL

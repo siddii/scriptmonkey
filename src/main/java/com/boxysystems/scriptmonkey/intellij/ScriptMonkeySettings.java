@@ -3,6 +3,7 @@ package com.boxysystems.scriptmonkey.intellij;
 import com.boxysystems.scriptmonkey.intellij.ui.PluginScript;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.*;
+import com.intellij.ui.JBColor;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.jetbrains.annotations.NotNull;
@@ -29,8 +30,8 @@ public class ScriptMonkeySettings implements ApplicationComponent, PersistentSta
 
     private String homeFolder = Constants.DEFAULT_HOME_FOLDER.getAbsolutePath();
     private List<PluginScript> pluginScripts = new ArrayList<PluginScript>();
-    private Color commandShellBackgroundColor = Color.WHITE;
-    private Color commandShellForegroundColor = Color.BLACK;
+    private Color commandShellBackgroundColor = JBColor.WHITE;
+    private Color commandShellForegroundColor = JBColor.BLACK;
 
     public ScriptMonkeySettings() {
     }

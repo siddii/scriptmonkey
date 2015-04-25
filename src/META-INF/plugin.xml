@@ -45,9 +45,9 @@
       <ul>
     ]]>
   </change-notes>
-  <version>1.0.2</version>
+  <version>1.1</version>
   <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
-  <idea-version since-build="122.519"/>
+  <idea-version since-build="140.000"/>
 
   <application-components>
     <component>

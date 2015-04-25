@@ -1,9 +1,6 @@
 package com.boxysystems.scriptmonkey.intellij.ui;
 
-import com.boxysystems.scriptmonkey.intellij.Constants;
-import com.boxysystems.scriptmonkey.intellij.ScriptMonkeyPluginClassLoader;
-import com.boxysystems.scriptmonkey.intellij.ScriptMonkeyApplicationComponent;
-import com.boxysystems.scriptmonkey.intellij.ScriptMonkeyPlugin;
+import com.boxysystems.scriptmonkey.intellij.*;
 import com.boxysystems.scriptmonkey.intellij.action.JSFileFilter;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
@@ -63,6 +60,11 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         this.project = project;
         this.plugin = scriptMonkeyPlugin;
         this.pluginClassLoader = new ScriptMonkeyPluginClassLoader(plugin);
+        try {
+            System.out.println("new InvokeScriptMethod().sayHello() = " + new InvokeScriptMethod().sayHello());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         createScriptEngine(scriptMonkeyPlugin);
     }
 
