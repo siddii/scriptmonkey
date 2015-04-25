@@ -60,11 +60,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         this.project = project;
         this.plugin = scriptMonkeyPlugin;
         this.pluginClassLoader = new ScriptMonkeyPluginClassLoader(plugin);
-        try {
-            System.out.println("new InvokeScriptMethod().sayHello() = " + new InvokeScriptMethod().sayHello());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         createScriptEngine(scriptMonkeyPlugin);
     }
 
@@ -173,12 +168,10 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         String engines[] = {"JavaScript", "nashorn"};
         for (String engine1 : engines) {
             try {
-                System.out.println("##### Looking for " + engine1);
                 ScriptEngine scriptEngine = engineManager.getEngineByName(engine1);
                 if (scriptEngine != null) {
                     return scriptEngine;
                 }
-                System.out.println("##### scriptEngine = " + scriptEngine);
             } catch (Exception e) {
                 logger.warn("Couldn't load engine - " + engine1);
             }

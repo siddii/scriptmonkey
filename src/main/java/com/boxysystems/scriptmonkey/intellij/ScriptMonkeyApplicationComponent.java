@@ -41,12 +41,10 @@ public class ScriptMonkeyApplicationComponent implements ApplicationComponent, C
   }
 
     public void setSettings(ScriptMonkeySettings settings) {
-        System.out.println("######### settings " + settings);
         this.settings = settings;
     }
 
     public void initComponent() {
-      System.out.println("########  ScriptMonkeyApplicationComponent.initComponent");
     initSettings();
     copyScriptsAction = new CopyScriptsOnStartupAction();
     copyScriptsAction.copyScripts(new File(settings.getHomeFolder()));
@@ -54,7 +52,6 @@ public class ScriptMonkeyApplicationComponent implements ApplicationComponent, C
   }
 
   private void initSettings() {
-      System.out.println("###########   ScriptMonkeyApplicationComponent.initSettings");
       settings =  ScriptMonkeySettings.getInstance();
   }
 
