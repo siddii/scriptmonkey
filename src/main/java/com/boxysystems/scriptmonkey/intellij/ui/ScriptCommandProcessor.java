@@ -7,6 +7,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.WindowManager;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -165,16 +166,15 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
 
     private ScriptEngine getScriptingEngine() {
         ScriptEngineManager engineManager = new ScriptEngineManager();
-        String engines[] = {"JavaScript", "nashorn"};
-        for (String engine1 : engines) {
-            try {
-                ScriptEngine scriptEngine = engineManager.getEngineByName(engine1);
-                if (scriptEngine != null) {
-                    return scriptEngine;
-                }
-            } catch (Exception e) {
-                logger.warn("Couldn't load engine - " + engine1);
+        try {
+            ScriptEngine scriptEngine = engineManager.getEngineByName("nashorn");
+            if (scriptEngine != null) {
+                scriptEngine.eval("load(\"nashorn:parser.js\");");
+                scriptEngine.eval("load(\"nashorn:mozilla_compat.js\");");
+                return scriptEngine;
             }
+        } catch (Exception e) {
+            logger.error("Couldn't load nashorn scripting engine!", e);
         }
         throw new RuntimeException("Cannot load scripting engine!");
     }
@@ -230,6 +230,7 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         addGlobalVariable("application", application);
         addGlobalVariable("project", project);
         addGlobalVariable("plugin", plugin);
+        addGlobalVariable("windowManager", WindowManager.getInstance());
     }
 
     public void addGlobalVariable(String name, Object globalObject) {

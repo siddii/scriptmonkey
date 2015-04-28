@@ -2,6 +2,9 @@ var timebarPkgs = new JavaImporter(com.intellij.openapi.application, com.intelli
 
 with (timebarPkgs) {
 
+  var project = engine.get('project');
+
+
   function getUptime(startTime, currentTime) {
     var diffInMillis = currentTime - startTime;
     var elapsedHrs = parseInt(diffInMillis / (1000 * 60 * 60),10);
@@ -14,9 +17,8 @@ with (timebarPkgs) {
 
   function main() {
     if (project != null) {
-      var windowManager = WindowManager.instance;
+      var windowManager = engine.get('windowManager');
       var statusBar = windowManager.getStatusBar(project);
-
       var uptimeLabel = new javax.swing.JLabel();
       uptimeLabel.setToolTipText("Start Time:" + new Date(intellij.application.startTime));
       statusBar.addCustomIndicationComponent(uptimeLabel);
@@ -45,4 +47,4 @@ with (timebarPkgs) {
     statusBar.setInfo("Time bar initialised!");
   }
 }
-var timebar = main();
+main();
