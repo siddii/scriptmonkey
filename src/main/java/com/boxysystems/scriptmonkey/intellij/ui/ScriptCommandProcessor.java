@@ -8,15 +8,11 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
+import com.intellij.util.lang.UrlClassLoader;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
+import javax.script.*;
 import javax.swing.*;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,7 +30,6 @@ import java.util.concurrent.TimeUnit;
  * Time: 5:10:21 PM
  */
 public class ScriptCommandProcessor implements ShellCommandProcessor {
-
     private static final Logger logger = Logger.getLogger(ScriptCommandProcessor.class);
 
     private volatile ScriptEngine engine;
@@ -42,7 +37,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
     private CountDownLatch engineReady = new CountDownLatch(1);
 
     private volatile String prompt;
-
 
     private boolean commandShell = true;
     private Application application;
@@ -54,7 +48,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         this.application = application;
         createScriptEngine(null);
     }
-
 
     public ScriptCommandProcessor(Application application, Project project, ScriptMonkeyPlugin scriptMonkeyPlugin) {
         this.application = application;
@@ -97,7 +90,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
                 } catch (Throwable e) {
                     callback.failure(e);
                 }
-
             }
         });
     }
@@ -153,7 +145,7 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
 
     private void createScriptEngine(ScriptMonkeyPlugin scriptMonkeyPlugin) {
         if (scriptMonkeyPlugin != null && pluginClassLoader != null) {
-            ScriptMonkeyPluginClassLoader augmentedClassLoader = pluginClassLoader.getAugmentedClassLoader();
+            UrlClassLoader augmentedClassLoader = pluginClassLoader.getAugmentedClassLoader();
             if (augmentedClassLoader != null) {
                 Thread.currentThread().setContextClassLoader(augmentedClassLoader);
             }
@@ -178,7 +170,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         }
         throw new RuntimeException("Cannot load scripting engine!");
     }
-
 
     private void runGlobalScripts() {
         try {
@@ -220,8 +211,7 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
     }
 
     private Bindings createGlobalBindings() {
-        Map<String, Object> map =
-                Collections.synchronizedMap(new HashMap<String, Object>());
+        Map<String, Object> map = Collections.synchronizedMap(new HashMap<String, Object>());
         return new SimpleBindings(map);
     }
 
@@ -259,7 +249,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
             return !executor.isTerminated();
         }
 
-
         public void run(ProgressIndicator indicator) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -277,12 +266,10 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
                             } catch (Throwable e) {
                                 callback.failure(e);
                             }
-
                         }
                     });
                 }
             });
-
         }
     }
 }

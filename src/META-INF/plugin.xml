@@ -1,86 +1,99 @@
 <!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">
 <idea-plugin version="2" url="https://github.com/siddii/scriptmonkey">
-  <name>Script Monkey</name>
-  <depends>com.intellij.modules.platform</depends>
-  <depends>com.intellij.modules.lang</depends>
-  <depends>com.intellij.modules.vcs</depends>
-  <depends>com.intellij.modules.xml</depends>
-  <depends>com.intellij.modules.xdebugger</depends>
-  <description>
+    <name>Script Monkey</name>
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.vcs</depends>
+    <depends>com.intellij.modules.xml</depends>
+    <depends>com.intellij.modules.xdebugger</depends>
+    <description>
     <![CDATA[
-      <p>
-      <b>Script Monkey</b> breaks the boundaries of Java and helps Java achieve the power & flexibilities of interpreted/dynamic languages. In other words, it helps Java achieve the best of both worlds.
-      </p>
-      <p>
-      Thanks to the embedded <b>Rhino</b> & <b>Scripting API</b> for being part of Java since v1.6.
-      It's an <b>all-in-one</b> plugin which means, anything that was possible only by writing a plugin can be done using
-      <b>plugin-scripts(simple javascript code)</b>. And, any tasks that makes more sense to be scripted can be
-      implemented using this tool.<br/>
-      </p>
-      <p>
-      Instead of explaining what this plugin can do in words, we wanted to show some in action.
-      <ol>
-      <li><a href="http://scriptmonkey.boxysystems.com/demos/HelloRhino/HelloRhino.htm">Say 'Hello' to Rhino</a></li>
-      <li><a href="http://scriptmonkey.boxysystems.com/demos/CommandShell/CommandShell.htm">Let's do some command shell scripting</a></li>
-      <li><a href="http://scriptmonkey.boxysystems.com/demos/TimebarPluginScript/TimebarPluginScript.htm">Timebar plugin script</a></li>
-      </ol>
-      </p>
-      <p>
-      Getting Started
-      <ul>
-      <li><a href="http://code.google.com/p/scriptmonkey/wiki/HowScriptMonkeyWorks">How "Script Monkey" IntelliJ plugin works?</a></li>
-      <li><a href="http://code.google.com/p/scriptmonkey/wiki/HowToWritePluginScripts">How to write plugin scripts?</a></li>
-      </ul>
-      </p>
-      For the latest information & documentations, please visit the <a href="http://code.google.com/p/scriptmonkey/">project's homepage</a> 
-		  ]]>
+        <p>
+            <b>Script Monkey</b> breaks the boundaries of Java and helps Java achieve the power & flexibilities of
+            interpreted/dynamic languages. In other words, it helps Java achieve the best of both worlds.
+        </p>
+        <p>
+            Thanks to the embedded <b>Rhino</b> & <b>Scripting API</b> for being part of Java since v1.6.
+            It's an <b>all-in-one</b> plugin which means, anything that was possible only by writing a plugin can be
+            done using
+            <b>plugin-scripts(simple javascript code)</b>. And, any tasks that makes more sense to be scripted can be
+            implemented using this tool.<br/>
+        </p>
+        <p>
+            Instead of explaining what this plugin can do in words, we wanted to show some in action.
+        <ol>
+            <li><a href="http://scriptmonkey.boxysystems.com/demos/HelloRhino/HelloRhino.htm">Say 'Hello' to Rhino</a>
+            </li>
+            <li><a href="http://scriptmonkey.boxysystems.com/demos/CommandShell/CommandShell.htm">Let's do some command
+                shell scripting</a></li>
+            <li><a href="http://scriptmonkey.boxysystems.com/demos/TimebarPluginScript/TimebarPluginScript.htm">Timebar
+                plugin script</a></li>
+        </ol>
+        </p>
+        <p>
+            Getting Started
+        <ul>
+            <li><a href="http://code.google.com/p/scriptmonkey/wiki/HowScriptMonkeyWorks">How "Script Monkey" IntelliJ
+                plugin works?</a></li>
+            <li><a href="http://code.google.com/p/scriptmonkey/wiki/HowToWritePluginScripts">How to write plugin
+                scripts?</a></li>
+        </ul>
+        </p>
+        For the latest information & documentations, please visit the <a href="http://code.google.com/p/scriptmonkey/">project's
+            homepage</a>
+        ]]>
   </description>
-  <change-notes>
-      
-    <![CDATA[
-      <ul>
-      <u>Version 1.0.2 changes:</u>
+    <change-notes><![CDATA[
+      <ul><u>Version 1.1.1 changes:</u>
+        <li>Compatible with IntelliJ v14 and v15 EAP ommunity Edition & WebStorm</li>
+      </ul>
+      <ul><u>Version 1.0.2 changes:</u>
         <li>Compatible with IntelliJ v12 Community Edition & WebStorm</li>
       </ul>
-      <ul>
     ]]>
-  </change-notes>
-  <version>1.1</version>
-  <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
-  <idea-version since-build="140.000"/>
+    </change-notes>
+    <version>1.1.1</version>
+    <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
+    <idea-version since-build="140.000"/>
 
-  <application-components>
-    <component>
-        <implementation-class>com.boxysystems.scriptmonkey.intellij.ScriptMonkeyApplicationComponent</implementation-class>
-    </component>
-      <component>
-          <implementation-class>com.boxysystems.scriptmonkey.intellij.ScriptMonkeySettings</implementation-class>
-      </component>
-  </application-components>
+    <application-components>
+        <component>
+            <implementation-class>com.boxysystems.scriptmonkey.intellij.ScriptMonkeyApplicationComponent
+            </implementation-class>
+        </component>
+        <component>
+            <implementation-class>com.boxysystems.scriptmonkey.intellij.ScriptMonkeySettings</implementation-class>
+        </component>
+    </application-components>
 
 
-  <!-- Plugin's application components -->
-  <project-components>
-    <component>
-      <implementation-class>com.boxysystems.scriptmonkey.intellij.ScriptMonkeyPlugin</implementation-class>
-    </component>
-    <component>
-      <implementation-class>com.boxysystems.scriptmonkey.intellij.ScriptMonkeyProjectComponent</implementation-class>
-    </component>
-  </project-components>
+    <!-- Plugin's application components -->
+    <project-components>
+        <component>
+            <implementation-class>com.boxysystems.scriptmonkey.intellij.ScriptMonkeyPlugin</implementation-class>
+        </component>
+        <component>
+            <implementation-class>com.boxysystems.scriptmonkey.intellij.ScriptMonkeyProjectComponent
+            </implementation-class>
+        </component>
+    </project-components>
 
-  <actions>
-    <group id="ScriptMonkey.MainMenu" popup="true" text="Scri_pt Monkey">
-      <add-to-group anchor="before" relative-to-action="WindowMenu" group-id="MainMenu"/>
-      <action class="com.boxysystems.scriptmonkey.intellij.action.RunScriptAction" text="Run Script" id="ScriptMonkey.MainMenu.RunScript" icon="/actions/execute.png">
-        <add-to-group group-id="EditorPopupMenu" anchor="before" relative-to-action="CloseEditor" />
-        <keyboard-shortcut first-keystroke="ctrl shift X" keymap="$default"/>  
-      </action>
-      <action class="com.boxysystems.scriptmonkey.intellij.action.ShowCommandShellAction" text="Show Command Shell" id="ScriptMonkey.MainMenu.ShowCommandShell"/>
-      <separator/>
-      <action class="com.boxysystems.scriptmonkey.intellij.action.ShowScriptMonkeyConfigurationAction" text="Settings" id="ScriptMonkey.MainMenu.ShowSettings"/>
-      <separator/>
-      <action class="com.boxysystems.scriptmonkey.intellij.action.OpenHelpAction" text="Help" id="ScriptMonkey.MainMenu.Help"/>
-    </group>
-  </actions>
+    <actions>
+        <group id="ScriptMonkey.MainMenu" popup="true" text="Scri_pt Monkey">
+            <add-to-group anchor="before" relative-to-action="WindowMenu" group-id="MainMenu"/>
+            <action class="com.boxysystems.scriptmonkey.intellij.action.RunScriptAction" text="Run Script"
+                    id="ScriptMonkey.MainMenu.RunScript" icon="/actions/execute.png">
+                <add-to-group group-id="EditorPopupMenu" anchor="before" relative-to-action="CloseEditor"/>
+                <keyboard-shortcut first-keystroke="ctrl shift X" keymap="$default"/>
+            </action>
+            <action class="com.boxysystems.scriptmonkey.intellij.action.ShowCommandShellAction"
+                    text="Show Command Shell" id="ScriptMonkey.MainMenu.ShowCommandShell"/>
+            <separator/>
+            <action class="com.boxysystems.scriptmonkey.intellij.action.ShowScriptMonkeyConfigurationAction"
+                    text="Settings" id="ScriptMonkey.MainMenu.ShowSettings"/>
+            <separator/>
+            <action class="com.boxysystems.scriptmonkey.intellij.action.OpenHelpAction" text="Help"
+                    id="ScriptMonkey.MainMenu.Help"/>
+        </group>
+    </actions>
 </idea-plugin>

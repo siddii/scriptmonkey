@@ -3,7 +3,6 @@ package com.boxysystems.scriptmonkey.intellij.action;
 import com.boxysystems.scriptmonkey.intellij.Constants;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptShellPanelAction;
 import com.boxysystems.scriptmonkey.intellij.icons.Icons;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 
