@@ -1,9 +1,6 @@
 package com.boxysystems.scriptmonkey.intellij.action;
 
-import com.boxysystems.scriptmonkey.intellij.Constants;
 import com.boxysystems.scriptmonkey.intellij.AbstractScriptMonkeyTestCase;
-import com.intellij.openapi.util.io.FileUtil;
-import junit.framework.TestCase;
 
 import java.io.File;
 import java.util.ArrayList;

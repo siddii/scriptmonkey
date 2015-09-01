@@ -5,7 +5,6 @@ import com.boxysystems.scriptmonkey.intellij.icons.Icons;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptMonkeyToolWindow;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptShellPanelAction;
 import com.boxysystems.scriptmonkey.intellij.util.ProjectUtil;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.content.Content;

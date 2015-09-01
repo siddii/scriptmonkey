@@ -6,12 +6,9 @@ import com.boxysystems.scriptmonkey.intellij.action.ShowScriptMonkeyConfiguratio
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptCommandProcessor;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptMonkeyToolWindow;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptShellPanel;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ProjectComponent;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
