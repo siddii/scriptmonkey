@@ -20,7 +20,7 @@ Where is all the old code?
 --------------------------
 If you are looking for older code of this project, please head to the project's [Google code](https://code.google.com/p/scriptmonkey/) repository
 
-Version 1.2.0 WIP switch to Nashorn engine
+Version 1.2.x WIP switch to Nashorn engine
 ---------------------
 The source is being reworked to be Nashorn compatible so this version is experimental. It works on IDEA CE 14 and 15 EAP. 
 
@@ -41,7 +41,9 @@ To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root 
     You can edit any text in the pane, but to execute it you will need to copy it to the bottom of the file, after the last prompt. If the pasted text ends in \n then it will be immediately executed, otherwise it will execute when you hit return at the end of text.
 -   Exception in scripts now properly reflect the source file name
 -   Exceptions in JS Shell scripts reflect the actual line and column of the source in the shell pane.
--   `timebar.js` in `resources/js/plugin-script` is now working under nashorn. Add it in settings:
+-   Fixed with() was hiding all engine scope bindings, now using global scope instead. The way engines are created global scopes are not shared anyway.
+-   Fixed text printed through window.println via timer would be interpreted as user typed command
+-   Change timebar.js to be reloadable without adding new labels and `timebar.js` in `resources/js/plugin-script` is now working under nashorn. Add it in settings:
 
     ![Timebar Settings](https://raw.githubusercontent.com/vsch/scriptmonkey/develop/assets/ScreenShot_toolwindow_timebar_plugin.png)    
     
@@ -49,7 +51,7 @@ To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root 
     
     ![Timebar Status](https://raw.githubusercontent.com/vsch/scriptmonkey/develop/assets/ScreenShot_toolwindow_timebar_statusbar.png)    
     
-    Implemented in JavaScript.
+    All Implemented in JavaScript.
     
 -   Clean-up of the hacking and experimentation is WIP.
          
