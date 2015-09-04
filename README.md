@@ -27,16 +27,19 @@ The source is being reworked to be Nashorn compatible so this version is experim
 **You will need to run your IDEA under jdk 1.8** to do this you need to refer to the instructions [Selecting the JDK version the IDE will run under](https://intellij-support.jetbrains.com/hc/en-us/articles/206827547-Selecting-the-JDK-version-the-IDE-will-run-under)
 
 
-To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root of the project to get the following enhancements;
+To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root of the project to get the following enhancements:
 
 -   IDEA Editor in the JS Shell toolwindow instead of JEdtiorPane. You get IDEA keymap, advanced editing functions, Application UI theme and JS syntax highlighting.
 
-| Default | Darcula |
-|---------|---------|
-|    
+    ![Default](https://raw.githubusercontent.com/vsch/scriptmonkey/develop/assets/ScreenShot_toolwindow_default.png)
+    
+    ![Darcula](https://raw.githubusercontent.com/vsch/scriptmonkey/develop/assets/ScreenShot_toolwindow_darcula.png)    
 
     The switchover is not complete. Hitting return when the cursor is after the last prompt position will `eval()` all text between the last prompt and the end of text.
     Otherwise, return will just insert a new line (as per your keymap) in the text.
-    
+        
     You can edit any text in the pane, but to execute it you will need to copy it to the bottom of the file, after the last prompt. If the pasted text ends in \n then it will be immediately executed, otherwise it will execute when you hit return at the end of text.
-    
+-   Exception in scripts now properly reflect the source file name
+-   Exceptions in JS Shell scripts reflect the actual line and column of the source in the shell pane.
+-   `timebar.js` in `resources/js/plugin-script` is now working under nashorn.
+-   Clean-up of the hacking and experimentation is WIP.
