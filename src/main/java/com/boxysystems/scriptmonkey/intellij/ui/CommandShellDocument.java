@@ -92,14 +92,14 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
             }
 
             if (updating == 1) {
-                applyBatchedText();
+                applyBatchedText(true);
             }
             else {
                 // recall the previous level hadOutput flag and combine with this one if it was not reset
                 batchHadOutput |= batchHadOutputStack.remove(batchHadOutputStack.size() - 1);
+                updating--;
             }
 
-            updating--;
         }
     }
 
@@ -107,7 +107,7 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
         return updating != 0;
     }
 
-    private void applyBatchedText() {
+    private void applyBatchedText(final boolean decrementUpdating) {
         if (batchedText != null) {
             final StringBuilder text = batchedText;
             final boolean isReplace = batchedReplace;
@@ -134,6 +134,7 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
                     }
                     scriptShellPanel.getEditor().getScrollingModel().scrollToCaret(ScrollType.RELATIVE);
                     setRawMark();
+                    if (decrementUpdating) updating--;
                 }
             });
         }

@@ -200,7 +200,14 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         engine = getScriptingEngine();
         String extension = engine.getFactory().getExtensions().get(0);
         prompt = extension + ">";
-        engine.setBindings(createGlobalBindings(), ScriptContext.ENGINE_SCOPE);
+
+        /*
+         vsch: since we get a new instance of ScriptEngineManager every time our Global Scope becomes per engine scope
+               to have shared global scope between engines you need to create them from the same ScriptEngineFactory instance
+               which would mean re-using the ScriptEngine Manager. So here we change to global scope so that our bindings
+               will work inside with() {} scope, which they don't for ENGINE_SCOPE
+        */
+        engine.setBindings(createGlobalBindings(), ScriptContext.GLOBAL_SCOPE);
     }
 
     private ScriptEngine getScriptingEngine() {

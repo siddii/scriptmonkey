@@ -48,6 +48,11 @@
     <idea-version since-build="141"/>
 
     <change-notes><![CDATA[
+      <ul><u>Version 1.2.1 changes:</u>
+        <li>Fixed with() was hiding all engine scope bindings, now using global scope instead. The way engines are created global scopes are not shared anyway.</li>
+        <li>Fixed text printed through window.println via timer would be interpreted as user typed command</li>
+        <li>Change timebar.js to be reloadable without adding new labels</li>
+      </ul>
       <ul><u>Version 1.2.0 changes:</u>
         <li>Fixed timebar.js to work with nashorn script engine.</li>
         <li>Changed since build to 141 since it cannot find script engine even if running IDEA jre 1.8</li>
