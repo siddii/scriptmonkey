@@ -99,7 +99,6 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
                 batchHadOutput |= batchHadOutputStack.remove(batchHadOutputStack.size() - 1);
                 updating--;
             }
-
         }
     }
 
@@ -152,7 +151,14 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
         if (text.length() > 0) batchHadOutput = true;
     }
 
-    public void safeInsertString(final int offset, final String text) {
+    public void safeInsertString(final int offset, String text) {
+        // vsch: replace all \r\n and \r by \n, otherwise we get assertion failures
+        if (text.contains("\r")) {
+            text = text.replace("\r\n", "\n");
+            text = text.replace('\r', '\n');
+        }
+        final String normalizedText = text;
+
         // TODO: can loosen the condition if batchedReplace then we can insert into the batchedText at the offset
         if (isUpdating() && offset >= getTextLength()) {
             // can batch it
@@ -163,10 +169,10 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
                 @Override
                 public void run() {
                     int caretOffset = getCaretOffset();
-                    delegateDocumentEx.insertString(offset, text);
+                    delegateDocumentEx.insertString(offset, normalizedText);
                     if (offset <= caretOffset) {
                         // advance caret by amount inserted
-                        setCaretOffset(caretOffset + text.length());
+                        setCaretOffset(caretOffset + normalizedText.length());
                     }
                 }
             });

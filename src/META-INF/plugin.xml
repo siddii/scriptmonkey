@@ -43,11 +43,17 @@
             homepage</a>
         ]]>
   </description>
-    <version>1.2.0</version>
+    <version>1.2.2</version>
     <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
     <idea-version since-build="141"/>
 
     <change-notes><![CDATA[
+      <ul><u>Version 1.2.2 changes:</u>
+        <li>Add catch assertion errors when executing commands in the shell, otherwise they abort the shell processor.</li>
+        <li>Add text printed to the shell pane converts \r\n and \r to \n to avoid assert fail in document insert.</li>
+        <li>Change timebar.js to nashorn recommended Java.type() usage and use function(){} to SAM conversion.</li>
+        <li>Change remove loading of nashorn:mozilla_compat.js because it screws up exception reporting in eval.</li>
+      </ul>
       <ul><u>Version 1.2.1 changes:</u>
         <li>Fixed with() was hiding all engine scope bindings, now using global scope instead. The way engines are created global scopes are not shared anyway.</li>
         <li>Fixed text printed through window.println via timer would be interpreted as user typed command</li>

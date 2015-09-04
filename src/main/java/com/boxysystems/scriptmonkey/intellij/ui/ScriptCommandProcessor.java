@@ -177,14 +177,18 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         } catch (ScriptException se) {
             // adjust the position of the error to correspond to actual source
             res = se.getMessage();
-            //if (se.getFileName().equals("<eval>")) {
-            int lineNumber = se.getLineNumber() + lineOffset;
-            int colNumber = se.getColumnNumber() + (se.getLineNumber() == 1 ? firstLineColumnOffset : 0);
-            res = res.replace(se.getFileName() + ":" + se.getLineNumber() + ":" + se.getColumnNumber() + " ", ""); //se.getFileName() + ":" + lineNumber + ":" + colNumber);
-            res = res.replace("at line number " + se.getLineNumber(), "at line " + lineNumber);
-            res = res.replace(" at column number " + se.getColumnNumber(), ":" + colNumber);
+            if (se.getFileName().equals("<Script Monkey JS Shell>")) {
+                //if (se.getFileName().equals("<eval>")) {
+                int lineNumber = se.getLineNumber() + lineOffset;
+                int colNumber = se.getColumnNumber() + (se.getLineNumber() == 1 ? firstLineColumnOffset : 0);
+                res = res.replace(se.getFileName() + ":" + se.getLineNumber() + ":" + se.getColumnNumber() + " ", ""); //se.getFileName() + ":" + lineNumber + ":" + colNumber);
+                res = res.replace("at line number " + se.getLineNumber(), "at line " + lineNumber);
+                res = res.replace(" at column number " + se.getColumnNumber(), ":" + colNumber);
+            }
             //}
         } catch (Exception e) {
+            res = e.toString();
+        } catch (AssertionError e) {
             res = e.toString();
         }
         return res;
@@ -216,7 +220,7 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
             ScriptEngine scriptEngine = engineManager.getEngineByName("nashorn");
             if (scriptEngine != null) {
                 scriptEngine.eval("load(\"nashorn:parser.js\");");
-                scriptEngine.eval("load(\"nashorn:mozilla_compat.js\");");
+                //scriptEngine.eval("load(\"nashorn:mozilla_compat.js\");");
                 return scriptEngine;
             }
         } catch (Exception e) {

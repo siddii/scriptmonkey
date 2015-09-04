@@ -17,7 +17,7 @@ public interface Constants {
 
   public static final String SETTINGS_FILE_NAME = "settings.xml";  
 
-  public static final String PLUGIN_HOME_PAGE = "http://code.google.com/p/scriptmonkey";
+  public static final String PLUGIN_HOME_PAGE = "https://github.com/siddii/scriptmonkey";
 
   public static final File DEFAULT_HOME_FOLDER = new File(new File(System.getProperty("user.home")), "scriptMonkey");
 
