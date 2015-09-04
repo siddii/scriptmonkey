@@ -90,7 +90,7 @@ public class RunScriptAction extends ScriptShellPanelAction {
                 commandProcessor.addGlobalVariable("window", panel);
                 panel.clear();
                 panel.println("Running script '" + scriptFile.getAbsolutePath() + "' ...");
-                ScriptCommandProcessor.ScriptRunningTask task = commandProcessor.processScript(scriptContent, new RunScriptActionCallback(panel));
+                ScriptCommandProcessor.ScriptRunningTask task = commandProcessor.processScript(scriptContent, scriptFile.getAbsolutePath(), new RunScriptActionCallback(panel));
                 panel.getStopScriptAction().setTask(task);
 
                 toolWindow.activate();

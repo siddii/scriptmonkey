@@ -1,6 +1,7 @@
-var mailApiPkgs = new JavaImporter(java.lang,java.util, java.io, javax.mail, javax.mail.internet);
+var mailApiPkgs = new JavaImporter(java.lang, java.util, java.io, javax.mail, javax.mail.internet);
 
-with (mailApiPkgs) {
+with (mailApiPkgs)
+{
 
     function sendFile() {
         echo("Sending file...");
@@ -11,9 +12,11 @@ with (mailApiPkgs) {
         var msgText1 = "Sending a file.\n";
         var subject = "Sending a file";
 
+        var System = Java.type("java.lang.System")
         var props = System.getProperties();
         props.put("mail.smtp.host", host);
 
+        var Session = Java.type("javax.mail.Session");
         var session = Session.getInstance(props, null);
 
         try {

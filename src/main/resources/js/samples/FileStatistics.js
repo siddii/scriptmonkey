@@ -1,4 +1,5 @@
-var validExtensions = java.util.Arrays.asList(new Array(".java", ".class", ".jar", ".xml"));
+var JStringArray = Java.type("String[]");
+var validExtensions = new JStringArray(".java", ".class", ".jar", ".xml");
 
 function runFileStatistics() {
     var projectBaseDir = new java.io.File(project.baseDir.path);

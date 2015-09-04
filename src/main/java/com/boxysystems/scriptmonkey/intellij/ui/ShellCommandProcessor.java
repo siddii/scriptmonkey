@@ -1,5 +1,7 @@
 package com.boxysystems.scriptmonkey.intellij.ui;
 
+import com.intellij.openapi.project.Project;
+
 /**
  * Created by IntelliJ IDEA.
  * User: siddique
@@ -9,6 +11,9 @@ package com.boxysystems.scriptmonkey.intellij.ui;
  */
 interface ShellCommandProcessor {
     public String executeCommand(String cmd);
+    public String executeCommand(String cmd, int lineOffset);
+    public String executeCommand(String cmd, int lineOffset, int firstLineColumnOffset);
     public String getPrompt();
-    public boolean isCommandShell(); 
+    public boolean isCommandShell();
+    public Project getProject();
 }

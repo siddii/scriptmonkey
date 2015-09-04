@@ -1,6 +1,9 @@
 package com.boxysystems.scriptmonkey.intellij.ui;
 
-import com.boxysystems.scriptmonkey.intellij.*;
+import com.boxysystems.scriptmonkey.intellij.Constants;
+import com.boxysystems.scriptmonkey.intellij.ScriptMonkeyApplicationComponent;
+import com.boxysystems.scriptmonkey.intellij.ScriptMonkeyPlugin;
+import com.boxysystems.scriptmonkey.intellij.ScriptMonkeyPluginClassLoader;
 import com.boxysystems.scriptmonkey.intellij.action.JSFileFilter;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
@@ -8,20 +11,18 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
+import com.intellij.util.lang.UrlClassLoader;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
+import javax.script.*;
 import javax.swing.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,7 +35,6 @@ import java.util.concurrent.TimeUnit;
  * Time: 5:10:21 PM
  */
 public class ScriptCommandProcessor implements ShellCommandProcessor {
-
     private static final Logger logger = Logger.getLogger(ScriptCommandProcessor.class);
 
     private volatile ScriptEngine engine;
@@ -43,9 +43,14 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
 
     private volatile String prompt;
 
-
     private boolean commandShell = true;
     private Application application;
+
+    @Override
+    public Project getProject() {
+        return project;
+    }
+
     private Project project;
     private ScriptMonkeyPlugin plugin;
     private ScriptMonkeyPluginClassLoader pluginClassLoader;
@@ -54,7 +59,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         this.application = application;
         createScriptEngine(null);
     }
-
 
     public ScriptCommandProcessor(Application application, Project project, ScriptMonkeyPlugin scriptMonkeyPlugin) {
         this.application = application;
@@ -91,20 +95,35 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
                     initScriptingEngineAndRunGlobalScripts();
                     if (scriptFile != null) {
                         logger.info("Evaluating script file '" + scriptFile + "' ...");
+                        // vsch: set the script file name for exceptions and __FILE__ setting
+                        engine.getContext().setAttribute(ScriptEngine.FILENAME, scriptFile.getAbsolutePath(), ScriptContext.ENGINE_SCOPE);
                         engine.eval(new FileReader(scriptFile));
                     }
                     callback.success();
+                } catch (ScriptException e) {
+                    String msg = e.getMessage();
+                    ScriptException se = e;
+                    msg = msg.replace(e.getFileName() + ":" + e.getLineNumber() + ":" + e.getColumnNumber() + " ", "");
+                    msg = msg.replaceAll("\\n\\n\\s*\\^?\\s*", ":");
+                    msg = msg.replace("in " + e.getFileName() + " ", "");
+                    msg = msg.replace(" at line number " + e.getLineNumber(), "");
+                    msg = msg.replace(" at column number " + e.getColumnNumber(), "");
+                    if (!msg.equals(e.getMessage())) {
+                        se = new ScriptException(msg.trim(), scriptFile.getPath(), e.getLineNumber(), e.getColumnNumber());
+                        se.setStackTrace(e.getStackTrace());
+                    }
+                    callback.failure(se);
                 } catch (Throwable e) {
+                    // adjust file name, it is off in the message
                     callback.failure(e);
                 }
-
             }
         });
     }
 
-    public ScriptRunningTask processScript(final String scriptContent, final ScriptProcessorCallback callback) {
+    public ScriptRunningTask processScript(final String scriptContent, final String scriptFileName, final ScriptProcessorCallback callback) {
         if (project != null) {
-            ScriptRunningTask task = new ScriptRunningTask("Running script...", scriptContent, callback);
+            ScriptRunningTask task = new ScriptRunningTask("Running script...", scriptContent, scriptFileName, callback);
             task.queue();
             return task;
         }
@@ -138,22 +157,42 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
     }
 
     public String executeCommand(String cmd) {
+        return executeCommand(cmd, 0, 0);
+    }
+
+    public String executeCommand(String cmd, int lineOffset) {
+        return executeCommand(cmd, lineOffset, 0);
+    }
+
+    public String executeCommand(String cmd, int lineOffset, int firstLineColumnOffset) {
         String res;
         try {
             engineReady.await();
+            // vsch: set the script file name for exceptions and __FILE__ setting
+            engine.getContext().setAttribute(ScriptEngine.FILENAME, "<Script Monkey JS Shell>", ScriptContext.ENGINE_SCOPE);
             Object tmp = engine.eval(cmd);
             res = (tmp == null) ? null : tmp.toString();
         } catch (InterruptedException ie) {
             res = ie.getMessage();
         } catch (ScriptException se) {
+            // adjust the position of the error to correspond to actual source
             res = se.getMessage();
+            //if (se.getFileName().equals("<eval>")) {
+            int lineNumber = se.getLineNumber() + lineOffset;
+            int colNumber = se.getColumnNumber() + (se.getLineNumber() == 1 ? firstLineColumnOffset : 0);
+            res = res.replace(se.getFileName() + ":" + se.getLineNumber() + ":" + se.getColumnNumber() + " ", ""); //se.getFileName() + ":" + lineNumber + ":" + colNumber);
+            res = res.replace("at line number " + se.getLineNumber(), "at line " + lineNumber);
+            res = res.replace(" at column number " + se.getColumnNumber(), ":" + colNumber);
+            //}
+        } catch (Exception e) {
+            res = e.toString();
         }
         return res;
     }
 
     private void createScriptEngine(ScriptMonkeyPlugin scriptMonkeyPlugin) {
         if (scriptMonkeyPlugin != null && pluginClassLoader != null) {
-            ScriptMonkeyPluginClassLoader augmentedClassLoader = pluginClassLoader.getAugmentedClassLoader();
+            UrlClassLoader augmentedClassLoader = pluginClassLoader.getAugmentedClassLoader();
             if (augmentedClassLoader != null) {
                 Thread.currentThread().setContextClassLoader(augmentedClassLoader);
             }
@@ -161,7 +200,14 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         engine = getScriptingEngine();
         String extension = engine.getFactory().getExtensions().get(0);
         prompt = extension + ">";
-        engine.setBindings(createGlobalBindings(), ScriptContext.ENGINE_SCOPE);
+
+        /*
+         vsch: since we get a new instance of ScriptEngineManager every time our Global Scope becomes per engine scope
+               to have shared global scope between engines you need to create them from the same ScriptEngineFactory instance
+               which would mean re-using the ScriptEngine Manager. So here we change to global scope so that our bindings
+               will work inside with() {} scope, which they don't for ENGINE_SCOPE
+        */
+        engine.setBindings(createGlobalBindings(), ScriptContext.GLOBAL_SCOPE);
     }
 
     private ScriptEngine getScriptingEngine() {
@@ -179,7 +225,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         throw new RuntimeException("Cannot load scripting engine!");
     }
 
-
     private void runGlobalScripts() {
         try {
             ScriptMonkeyApplicationComponent applicationComponent = ApplicationManager.getApplication().getComponent(ScriptMonkeyApplicationComponent.class);
@@ -190,6 +235,8 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
                 for (File jsFile : jsFiles) {
                     try {
                         logger.info("Evaluating script '" + jsFile + "' ...");
+                        // vsch: set the script file name for exceptions and __FILE__ setting
+                        engine.getContext().setAttribute(ScriptEngine.FILENAME, jsFile.getAbsolutePath(), ScriptContext.ENGINE_SCOPE);
                         engine.eval(new FileReader(jsFile));
                         logger.info("Script successfully processed !");
                     } catch (ScriptException e) {
@@ -209,6 +256,8 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         for (File jsFile : jsFiles) {
             try {
                 logger.info("Evaluating script '" + jsFile + "' ...");
+                // vsch: set the script file name for exceptions and __FILE__ setting
+                engine.getContext().setAttribute(ScriptEngine.FILENAME, jsFile.getAbsolutePath(), ScriptContext.ENGINE_SCOPE);
                 engine.eval(new FileReader(jsFile));
                 logger.info("Script successfully processed !");
             } catch (ScriptException e) {
@@ -220,8 +269,7 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
     }
 
     private Bindings createGlobalBindings() {
-        Map<String, Object> map =
-                Collections.synchronizedMap(new HashMap<String, Object>());
+        Map<String, Object> map = Collections.synchronizedMap(new HashMap<String, Object>());
         return new SimpleBindings(map);
     }
 
@@ -243,11 +291,13 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         private ScriptProcessorCallback callback;
         private String scriptContent;
         private ExecutorService executor;
+        private String scriptFilename;
 
-        public ScriptRunningTask(@NotNull String title, String scriptContent, ScriptProcessorCallback callback) {
+        public ScriptRunningTask(@NotNull String title, String scriptContent, String scriptFilename, ScriptProcessorCallback callback) {
             super(project, title, false);
             this.scriptContent = scriptContent;
             this.callback = callback;
+            this.scriptFilename = scriptFilename == null || scriptFilename.length() == 0 ? "<eval>" : scriptFilename;
             this.setCancelText("Stop running scripts");
         }
 
@@ -258,7 +308,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         public boolean isRunning() {
             return !executor.isTerminated();
         }
-
 
         public void run(ProgressIndicator indicator) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -271,18 +320,18 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
 
                                 if (scriptContent != null) {
                                     logger.info("Evaluating script ...");
+                                    // vsch: set the script file name for exceptions and __FILE__ setting
+                                    engine.getContext().setAttribute(ScriptEngine.FILENAME, scriptFilename, ScriptContext.ENGINE_SCOPE);
                                     engine.eval(scriptContent);
                                 }
                                 callback.success();
                             } catch (Throwable e) {
                                 callback.failure(e);
                             }
-
                         }
                     });
                 }
             });
-
         }
     }
 }

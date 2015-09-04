@@ -2,7 +2,6 @@ package com.boxysystems.scriptmonkey.intellij.action;
 
 import com.boxysystems.scriptmonkey.intellij.icons.Icons;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptShellPanelAction;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 /**

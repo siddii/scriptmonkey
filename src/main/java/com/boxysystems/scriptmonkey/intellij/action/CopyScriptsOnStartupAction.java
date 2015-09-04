@@ -5,7 +5,6 @@ import com.boxysystems.scriptmonkey.intellij.util.JarExploder;
 import com.boxysystems.scriptmonkey.intellij.util.ScriptMonkeyFileUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
-import com.intellij.openapi.util.io.FileUtil;
 import org.apache.log4j.Logger;
 
 import java.io.File;
