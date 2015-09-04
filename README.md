@@ -43,11 +43,11 @@ To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root 
 -   Exceptions in JS Shell scripts reflect the actual line and column of the source in the shell pane.
 -   `timebar.js` in `resources/js/plugin-script` is now working under nashorn. Add it in settings:
 
-    ![Timebar Settings](https://raw.githubusercontent.com/vsch/scriptmonkey/develop/assets/ScreenShot_toolwindow_timebar_settings.png)    
+    ![Timebar Settings](https://raw.githubusercontent.com/vsch/scriptmonkey/develop/assets/ScreenShot_toolwindow_timebar_plugin.png)    
     
     or run as `load("scriptMonkey/js/plugin-script/timebar.js")' in the shell but provide the full path to the script and get this added to your status bar:
     
-    ![Timebar Settings](https://raw.githubusercontent.com/vsch/scriptmonkey/develop/assets/ScreenShot_toolwindow_timebar_statusbar.png)    
+    ![Timebar Status](https://raw.githubusercontent.com/vsch/scriptmonkey/develop/assets/ScreenShot_toolwindow_timebar_statusbar.png)    
     
     Implemented in JavaScript.
     
