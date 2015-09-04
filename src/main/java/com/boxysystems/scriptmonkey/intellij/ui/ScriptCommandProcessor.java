@@ -92,7 +92,7 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    initScriptingEngineAndRunGlobalScripts();
+                    runGlobalScripts();
                     if (scriptFile != null) {
                         logger.info("Evaluating script file '" + scriptFile + "' ...");
                         // vsch: set the script file name for exceptions and __FILE__ setting
@@ -130,15 +130,10 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         return null;
     }
 
-    private void initScriptingEngineAndRunGlobalScripts() {
-        initScriptEngine();
-        runGlobalScripts();
-    }
-
     public void processCommandLine() {
         new Thread(new Runnable() {
             public void run() {
-                initScriptingEngineAndRunGlobalScripts();
+                runGlobalScripts();
                 engineReady.countDown();
             }
         }).start();
@@ -212,6 +207,9 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
                will work inside with() {} scope, which they don't for ENGINE_SCOPE
         */
         engine.setBindings(createGlobalBindings(), ScriptContext.GLOBAL_SCOPE);
+
+        // vsch: moved initialization of globals here so it is the same as window, which is the only one that works in issue: #6
+        initScriptEngine();
     }
 
     private ScriptEngine getScriptingEngine() {
@@ -319,7 +317,7 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
                     executor = Executors.newFixedThreadPool(1);
                     executor.execute(new Runnable() {
                         public void run() {
-                            initScriptingEngineAndRunGlobalScripts();
+                            runGlobalScripts();
                             try {
 
                                 if (scriptContent != null) {
