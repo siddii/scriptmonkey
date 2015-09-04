@@ -5,7 +5,7 @@
 
   <property name="sourceZip" value="./${ant.project.name}_src_${idea-plugin.version}.zip"/>
 
-  <property name="jsSource" value="./main/resources/js"/>
+  <property name="jsSource" value="./main/archive/js"/>
   <property name="jsJar" value="./main/resources/lib/js.jar"/>
 
   <target name="updateJSJar">

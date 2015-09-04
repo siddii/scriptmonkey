@@ -28,7 +28,6 @@ The source is being reworked to be Nashorn compatible so this version is experim
 
 **You will need to run your IDEA under jdk 1.8** to do this you need to refer to the instructions [Selecting the JDK version the IDE will run under](https://intellij-support.jetbrains.com/hc/en-us/articles/206827547-Selecting-the-JDK-version-the-IDE-will-run-under)
 
-
 To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root of the project to get the following enhancements:
 
 -   IDEA Editor in the JS Shell toolwindow instead of JEdtiorPane. You get IDEA keymap, advanced editing functions, Application UI theme and JS syntax highlighting.
