@@ -7,7 +7,7 @@ Introduction
 rhino scripting in a *plugin* environment.
 In other words, it helps Java achieve the best of both worlds.
 
-Thanks to the embedded Rhino & Scripting API for being part of Java since v1.6. It's an all-in-one plugin which means, anything that was possible only by writing a plugin can be done using _plugin-scripts_(simple javascript code). And, any tasks that makes more sense to be scripted can be implemented using this tool.
+Thanks to the embedded Nashorn & Scripting API for being part of Java since v1.7. It's an all-in-one plugin which means, anything that was possible only by writing a plugin can be done using _plugin-scripts_(simple javascript code). And, any tasks that makes more sense to be scripted can be implemented using this tool.
 
 Demos
 -----
@@ -19,3 +19,24 @@ Instead of explaining what this plugin can do in words, we wanted to show some i
 Where is all the old code?
 --------------------------
 If you are looking for older code of this project, please head to the project's [Google code](https://code.google.com/p/scriptmonkey/) repository
+
+Version 1.2.0 WIP switch to Nashorn engine
+---------------------
+The source is being reworked to be Nashorn compatible so this version is experimental. It works on IDEA CE 14 and 15 EAP. 
+
+**You will need to run your IDEA under jdk 1.8** to do this you need to refer to the instructions [Selecting the JDK version the IDE will run under](https://intellij-support.jetbrains.com/hc/en-us/articles/206827547-Selecting-the-JDK-version-the-IDE-will-run-under)
+
+
+To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root of the project to get the following enhancements;
+
+-   IDEA Editor in the JS Shell toolwindow instead of JEdtiorPane. You get IDEA keymap, advanced editing functions, Application UI theme and JS syntax highlighting.
+
+| Default | Darcula |
+|---------|---------|
+|    
+
+    The switchover is not complete. Hitting return when the cursor is after the last prompt position will `eval()` all text between the last prompt and the end of text.
+    Otherwise, return will just insert a new line (as per your keymap) in the text.
+    
+    You can edit any text in the pane, but to execute it you will need to copy it to the bottom of the file, after the last prompt. If the pasted text ends in \n then it will be immediately executed, otherwise it will execute when you hit return at the end of text.
+    

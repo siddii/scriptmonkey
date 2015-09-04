@@ -1,9 +1,16 @@
 var timebarPkgs = new JavaImporter(com.intellij.openapi.application, com.intellij.openapi.project, com.intellij.openapi.wm);
 
-with (timebarPkgs) {
-
+// vsch: with() seems to hide engine scope bindings. If uncommented then engine.get throws null has no method get
+//with (timebarPkgs)
+{
   var project = engine.get('project');
 
+  function leftFill(num, places, char) {
+      if (arguments.length < 3) char = '0';
+      s = "" + num;
+      while (s.length < places) s = char + s;
+      return s;
+  }
 
   function getUptime(startTime, currentTime) {
     var diffInMillis = currentTime - startTime;
@@ -12,7 +19,10 @@ with (timebarPkgs) {
     diffInMillis = diffInMillis - (1000 * 60 * 60 * elapsedHrs);
 
     var elapsedMins = parseInt(diffInMillis / (1000 * 60),10);
-    return elapsedHrs + " hrs," + elapsedMins + " mins";
+    diffInMillis = diffInMillis - (1000 * 60 * elapsedMins);
+
+    var elapsedSecs = parseInt(diffInMillis / 1000, 10)
+    return leftFill(elapsedHrs, 2) + ":" + leftFill(elapsedMins, 2) + ":" + leftFill(elapsedSecs);
   }
 
   function main() {
@@ -34,10 +44,13 @@ with (timebarPkgs) {
       run: function() {
         while (true) {
           var now = new java.util.Date();
-          timerLabel.setText("Current Time: " + timeFormat.format(now));
-          timerLabel.setToolTipText(dateFormat.format(now))
+          // vsch: here we need to manipulate the UI from the AWT Event Thread, so invokeLater will do the trick
+          (function () {
+              timerLabel.setText(" Current Time: " + timeFormat.format(now));
+              timerLabel.setToolTipText(dateFormat.format(now))
 
-          uptimeLabel.setText("Uptime:" + getUptime(intellij.application.startTime, now.getTime()));
+              uptimeLabel.setText(" Uptime: " + getUptime(intellij.application.startTime, now.getTime()));
+          }).invokeLater();
           java.lang.Thread.sleep(1000);
         }
       }
@@ -47,4 +60,6 @@ with (timebarPkgs) {
     statusBar.setInfo("Time bar initialised!");
   }
 }
-main();
+
+// vsch: here we need to manipulate the UI from the AWT Event Thread, so invokeLater will do the trick
+main.invokeLater();

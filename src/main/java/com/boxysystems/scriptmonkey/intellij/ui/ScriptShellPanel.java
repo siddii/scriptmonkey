@@ -2,186 +2,215 @@ package com.boxysystems.scriptmonkey.intellij.ui;
 
 import com.boxysystems.scriptmonkey.intellij.Constants;
 import com.boxysystems.scriptmonkey.intellij.ScriptMonkeySettings;
+import com.boxysystems.scriptmonkey.intellij.action.CloseScriptConsoleAction;
 import com.boxysystems.scriptmonkey.intellij.action.RerunScriptAction;
 import com.boxysystems.scriptmonkey.intellij.action.StopScriptAction;
-import com.boxysystems.scriptmonkey.intellij.action.CloseScriptConsoleAction;
+import com.intellij.ide.highlighter.HighlighterFactory;
+import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.ScrollType;
+import com.intellij.openapi.editor.ex.DocumentEx;
+import com.intellij.openapi.editor.impl.EditorImpl;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.StdFileTypes;
+import com.intellij.openapi.fileTypes.ex.FileTypeManagerEx;
+import com.intellij.openapi.project.Project;
 
 import javax.swing.*;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import java.awt.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
 public class ScriptShellPanel extends JPanel {
 
-  private ShellCommandProcessor shellCommandProcessor;
+    private ShellCommandProcessor shellCommandProcessor;
     private AnAction[] actions;
-    private JEditorPane editor;
+    private EditorImpl editor;
 
-  private final ExecutorService commandExecutor =
-    Executors.newSingleThreadExecutor();
+    private final ExecutorService commandExecutor = Executors.newSingleThreadExecutor();
 
-  private boolean updating;
+    public ScriptShellPanel(ShellCommandProcessor cmdProc, AnAction actions[]) {
+        this.shellCommandProcessor = cmdProc;
+        this.actions = actions;
 
-  public ScriptShellPanel(ShellCommandProcessor cmdProc, AnAction actions[]) {
-    this.shellCommandProcessor = cmdProc;
-      this.actions = actions;
-      setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
-    final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
+        final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
 
-    for (int i = 0; i < actions.length; i++) {
-      AnAction action = actions[i];
-      toolbarGroup.add(action);
-    }
-
-    final ActionManager actionManager = ActionManager.getInstance();
-    final ActionToolbar toolbar = actionManager.createActionToolbar(Constants.PLUGIN_ID, toolbarGroup, false);
-
-    add(toolbar.getComponent(), BorderLayout.WEST);
-
-    this.editor = new JEditorPane();
-
-    editor.setDocument(new CommandShellDocument());
-
-    if (!cmdProc.isCommandShell()) {
-      editor.setEditable(false);
-    }
-
-    JScrollPane scroller = new JScrollPane();
-    scroller.getViewport().add(editor);
-    add(scroller, BorderLayout.CENTER);
-
-    editor.getDocument().addDocumentListener(new CommandShellDocumentListener(this));
-
-    editor.addCaretListener(new CaretListener() {
-      public void caretUpdate(CaretEvent e) {
-        int len = editor.getDocument().getLength();
-        if (e.getDot() > len) {
-          editor.setCaretPosition(len);
+        for (int i = 0; i < actions.length; i++) {
+            AnAction action = actions[i];
+            toolbarGroup.add(action);
         }
-      }
-    });
 
-    if (shellCommandProcessor.isCommandShell()) {
-      clear();
-    }
-  }
+        final ActionManager actionManager = ActionManager.getInstance();
+        final ActionToolbar toolbar = actionManager.createActionToolbar(Constants.PLUGIN_ID, toolbarGroup, false);
 
-  public void requestFocus() {
-    editor.requestFocus();
-  }
+        add(toolbar.getComponent(), BorderLayout.WEST);
 
-  public void clear() {
-    clear(true);
-  }
+        // use IDEA's editor for the console
+        Language language = Language.findLanguageByID("JS");
+        FileType fileType = language != null ? language.getAssociatedFileType() : null;
+        boolean foundType = fileType != null;
+        FileType fileTypeHighlighOnly = null;
 
-  public void clear(boolean prompt) {
-    CommandShellDocument d = (CommandShellDocument) editor.getDocument();
-    d.clear();
-    if (prompt) {
-      printPrompt();
-    }
-    setMark();
-    editor.requestFocus();
-  }
-
-  public void setMark() {
-    ((CommandShellDocument) editor.getDocument()).setMark();
-  }
-
-  public String getMarkedText() {
-    try {
-      String s = ((CommandShellDocument) editor.getDocument()).getMarkedText();
-      int i = s.length();
-      while ((i > 0) && (s.charAt(i - 1) == '\n')) {
-        i--;
-      }
-      return s.substring(0, i);
-    } catch (BadLocationException e) {
-      e.printStackTrace();
-      return null;
-    }
-  }
-
-  public void print(String s) {
-    Document d = editor.getDocument();
-    try {
-      d.insertString(d.getLength(), s, null);
-    } catch (BadLocationException e) {
-      e.printStackTrace();
-    }
-  }
-
-  public void println(final String s) {
-    SwingUtilities.invokeLater(new Runnable(){
-        public void run() {
-            Document d = editor.getDocument();
-            try {
-                d.insertString(d.getLength(), s + "\n", null);
-            } catch (BadLocationException e) {
-                e.printStackTrace();
-            }
+        if (!foundType) {
+            fileType = StdFileTypes.PLAIN_TEXT;
+            fileTypeHighlighOnly = FileTypeManagerEx.getInstanceEx().getFileTypeByExtension(".js");
         }
-    });
-  }
 
-  //TODO: Need to implement this
-  public void stopScript() {
-    commandExecutor.shutdownNow();
-    println("Script cancelled!");
-  }
+        FileType highlighterFileType = foundType || fileTypeHighlighOnly == null ? fileType : fileTypeHighlighOnly;
 
-  public void beginUpdate() {
-    editor.setEditable(false);
-    updating = true;
-  }
+        Project project = shellCommandProcessor.getProject();
+        assert project != null;
 
-  public void endUpdate() {
-    editor.setEditable(true);
-    updating = false;
-  }
+        CommandShellDocument myDocument = new CommandShellDocument((DocumentEx) EditorFactory.getInstance().createDocument(""), this);
 
-  public void printPrompt() {
-    if (shellCommandProcessor.isCommandShell()) {
-      print(getPrompt());
+        editor = (EditorImpl) (cmdProc.isCommandShell() ?
+                EditorFactory.getInstance().createEditor(myDocument, project) :
+                EditorFactory.getInstance().createViewer(myDocument, project));
+
+        editor.setHighlighter(HighlighterFactory.createHighlighter(project, highlighterFileType));
+
+        editor.getDocument().addDocumentListener(new CommandShellDocumentListener(this));
+
+        editor.getSettings().setUseTabCharacter(false);
+
+        add(editor.getComponent());
+
+        if (shellCommandProcessor.isCommandShell()) {
+            clear();
+        }
     }
-  }
 
-  private String getPrompt() {
-    return shellCommandProcessor.getPrompt();
-  }
+    public void disposeComponent() {
+        // release the editor
+        remove(editor.getComponent());
+        // vsch: if uncommented the on project close we get double release of editor, when commented we get editor
+        // was not released. It would be better to use EditorTextField for the editor but it creates its editor
+        // on demand and we need to have it during init. So we live with an unreleased editor.
+        //editor.release();
 
-  public boolean isUpdating() {
-    return updating;
-  }
+        editor = null;
+        shellCommandProcessor = null;
+        actions = null;
+    }
 
-  public String executeCommand(String cmd) {
-    return shellCommandProcessor.executeCommand(cmd);
-  }
+    public Project getProject() {
+        return shellCommandProcessor.getProject();
+    }
 
-  public ExecutorService getCommandExecutor() {
-    return commandExecutor;
-  }
+    public void clear() {
+        clear(true);
+    }
 
-  public JEditorPane getEditor() {
-    return editor;
-  }
+    public void clear(boolean prompt) {
+        // TODO: make document updates handle setting readonly
+        //        editor.getDocument().setReadOnly(false);
+        getDocument().beginUpdate();
+        CommandShellDocument d = (CommandShellDocument) editor.getDocument();
+        d.clear();
+        if (prompt) {
+            printPrompt();
+        }
+        // TODO: make document updates handle setting readonly
+        //        editor.getDocument().setReadOnly(true);
+        getDocument().endUpdate();
+        // this is done automatically after bulk update
+        // setMark();
+        requestFocus();
+    }
 
-  public void applySettings(ScriptMonkeySettings settings) {
-    editor.setBackground(settings.getCommandShellBackgroundColor());
-    editor.setForeground(settings.getCommandShellForegroundColor());
-  }
+    @Override
+    public void requestFocus() {
+        editor.getContentComponent().requestFocus();
+        editor.getScrollingModel().scrollToCaret(ScrollType.RELATIVE);
+    }
 
-    public void toggleActions(){
+    public CommandShellDocument getDocument() {
+        return (CommandShellDocument) editor.getDocument();
+    }
+
+    public void print(String s) {
+        CommandShellDocument d = (CommandShellDocument) editor.getDocument();
+        d.beginUpdate();
+        d.appendString(s);
+        d.endUpdate();
+    }
+
+    public void println(final String s) {
+        CommandShellDocument d = getDocument();
+        d.beginUpdate();
+        d.appendString(s + "\n");
+        d.endUpdate();
+    }
+
+    //TODO: Need to implement this
+    public void stopScript() {
+        commandExecutor.shutdownNow();
+        println("Script cancelled!");
+    }
+
+    public void printPrompt() {
+        if (shellCommandProcessor.isCommandShell()) {
+            print(getPrompt());
+        }
+    }
+
+    private String getPrompt() {
+        return shellCommandProcessor.getPrompt();
+    }
+
+    public String executeCommand(String cmd) {
+        // TODO: make document updates handle setting readonly
+        //        editor.getDocument().setReadOnly(false);
+        getDocument().beginUpdate();
+        String s = shellCommandProcessor.executeCommand(cmd);
+        // TODO: make document updates handle setting readonly
+        //        editor.getDocument().setReadOnly(true);
+        getDocument().endUpdate();
+        return s;
+    }
+
+    public String executeCommand(String cmd, int lineOffset) {
+        // TODO: make document updates handle setting readonly
+        //        editor.getDocument().setReadOnly(false);
+        getDocument().beginUpdate();
+        String s = shellCommandProcessor.executeCommand(cmd, lineOffset);
+        // TODO: make document updates handle setting readonly
+        //        editor.getDocument().setReadOnly(true);
+        getDocument().endUpdate();
+        return s;
+    }
+
+    public String executeCommand(String cmd, int lineOffset, int firstLineColumnOffset) {
+        // TODO: make document updates handle setting readonly
+        //        editor.getDocument().setReadOnly(false);
+        getDocument().beginUpdate();
+        String s = shellCommandProcessor.executeCommand(cmd, lineOffset, firstLineColumnOffset);
+        // TODO: make document updates handle setting readonly
+        //        editor.getDocument().setReadOnly(true);
+        getDocument().endUpdate();
+        return s;
+    }
+
+    public ExecutorService getCommandExecutor() {
+        return commandExecutor;
+    }
+
+    public EditorImpl getEditor() {
+        return editor;
+    }
+
+    public void applySettings(ScriptMonkeySettings settings) {
+        //editor.setBackgroundColor(settings.getCommandShellBackgroundColor());
+        //editor.setForeground(settings.getCommandShellForegroundColor());
+    }
+
+    public void toggleActions() {
         for (int i = 0; i < actions.length; i++) {
             AnAction action = actions[i];
             if (action instanceof RerunScriptAction) {
@@ -199,17 +228,15 @@ public class ScriptShellPanel extends JPanel {
                 closeSctiptConsoleAction.setEnabled(!closeSctiptConsoleAction.isEnabled());
             }
         }
-
     }
 
-    public StopScriptAction getStopScriptAction(){
+    public StopScriptAction getStopScriptAction() {
         for (int i = 0; i < actions.length; i++) {
             AnAction action = actions[i];
-            if (action instanceof StopScriptAction){
+            if (action instanceof StopScriptAction) {
                 return (StopScriptAction) action;
             }
         }
-        return null;            
+        return null;
     }
-
 }

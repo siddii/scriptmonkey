@@ -231,9 +231,9 @@ public class ScriptMonkeyPluginClassLoader
     UrlClassLoader.loadPlatformLibrary(libName);
   }
 
-  @NotNull
-  public static UrlClassLoader.CachePool createCachePool()
-  {
-    return UrlClassLoader.createCachePool();
-  }
+  //@NotNull
+  //public static UrlClassLoader.CachePool createCachePool()
+  //{
+  //  return UrlClassLoader.createCachePool();
+  //}
 }

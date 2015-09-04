@@ -43,7 +43,18 @@
             homepage</a>
         ]]>
   </description>
+    <version>1.2.0</version>
+    <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
+    <idea-version since-build="141"/>
+
     <change-notes><![CDATA[
+      <ul><u>Version 1.2.0 changes:</u>
+        <li>Fixed timebar.js to work with nashorn script engine.</li>
+        <li>Changed since build to 141 since it cannot find script engine even if running IDEA jre 1.8</li>
+        <li>Changed toolwindow pane to standard editor with JS highlighting. This is WIP, needs better handling of editing and executing prior command lines.</li>
+        <li>Add Set script file name so that exceptions report the right source</li>
+        <li>Add line and column offsets to exceptions reported for the Script Monkey JS Shell</li>
+      </ul>
       <ul><u>Version 1.1.1 changes:</u>
         <li>Compatible with IntelliJ v14 and v15 EAP ommunity Edition & WebStorm</li>
       </ul>
@@ -52,10 +63,6 @@
       </ul>
     ]]>
     </change-notes>
-    <version>1.1.1</version>
-    <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
-    <idea-version since-build="140.000"/>
-
     <application-components>
         <component>
             <implementation-class>com.boxysystems.scriptmonkey.intellij.ScriptMonkeyApplicationComponent
