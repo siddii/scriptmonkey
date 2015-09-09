@@ -7,18 +7,23 @@ import com.boxysystems.scriptmonkey.intellij.action.RerunScriptAction;
 import com.boxysystems.scriptmonkey.intellij.action.StopScriptAction;
 import com.intellij.ide.highlighter.HighlighterFactory;
 import com.intellij.lang.Language;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.editor.impl.EditorImpl;
+import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.fileTypes.ex.FileTypeManagerEx;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -84,17 +89,32 @@ public class ScriptShellPanel extends JPanel {
         if (shellCommandProcessor.isCommandShell()) {
             clear();
         }
+
     }
 
     public void disposeComponent() {
         // release the editor
-        remove(editor.getComponent());
-        // vsch: if uncommented the on project close we get double release of editor, when commented we get editor
-        // was not released. It would be better to use EditorTextField for the editor but it creates its editor
-        // on demand and we need to have it during init. So we live with an unreleased editor.
-        //editor.release();
-
+        final EditorImpl thisEditor = editor;
         editor = null;
+
+        remove(thisEditor.getComponent());
+
+        final Application application = ApplicationManager.getApplication();
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (!thisEditor.isDisposed()) {
+                    EditorFactory.getInstance().releaseEditor(editor);
+                }
+            }
+        };
+
+        if (application.isUnitTestMode() || application.isDispatchThread()) {
+            runnable.run();
+        } else {
+            application.invokeLater(runnable);
+        }
+
         shellCommandProcessor = null;
         actions = null;
     }

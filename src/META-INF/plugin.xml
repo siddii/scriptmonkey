@@ -43,13 +43,16 @@
             homepage</a>
         ]]>
   </description>
-    <version>1.2.3</version>
+    <version>1.2.4</version>
     <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
-    <idea-version since-build="141"/>
+    <idea-version since-build="141.1550"/>
 
     <change-notes><![CDATA[
+      <ul><u>Version 1.2.4 changes:</u>
+        <li>Fix editor was not released error.</li>
+      </ul>
       <ul><u>Version 1.2.3 changes:</u>
-        <li>Change move global var definition into engine init to address issue #8.</li>
+        <li>Change move global var definition in engine init to address issue #8.</li>
       </ul>
       <ul><u>Version 1.2.2 changes:</u>
         <li>Add catch assertion errors when executing commands in the shell, otherwise they abort the shell processor.</li>

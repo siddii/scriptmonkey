@@ -1,6 +1,7 @@
 "strict";
 
-// leave them global so it can be re-run with changes without creating more labels on the status bar
+// leave them global so it ca be re-run with changes without creating more labels on the status bar
+/* comment */
 var timerLabel;
 var uptimeLabel;
 var timerVersion;
