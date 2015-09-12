@@ -9,6 +9,8 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 
+import java.util.ArrayList;
+
 /**
  * Created by IntelliJ IDEA.
  * User: siddique
@@ -21,7 +23,7 @@ public class ScriptMonkeyToolWindow {
 
     private static final String TOOL_WINDOW_ID = "Script Monkey";
     private Project project;
-
+    private ArrayList<ScriptShellPanel> scriptShellPanels = new ArrayList<ScriptShellPanel>();
 
     public ScriptMonkeyToolWindow(Project project) {
         this.project = project;
@@ -29,8 +31,8 @@ public class ScriptMonkeyToolWindow {
         toolWindow.setIcon(Icons.TOOLBAR_ICON);
     }
 
-
     public Content addContentPanel(String contentName, ScriptShellPanel scriptShellPanel) {
+        scriptShellPanels.add(scriptShellPanel);
 
         ScriptShellTabContent scriptShellTabContent = new ScriptShellTabContent(scriptShellPanel);
 
@@ -43,6 +45,15 @@ public class ScriptMonkeyToolWindow {
 
     public void unregisterToolWindow() {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
+
+        // we need to dispose of all the editors and shellpanes
+        for (ScriptShellPanel panel : scriptShellPanels) {
+            // need to tell them to dispose their components
+            if (panel != null) {
+                panel.disposeComponent();
+            }
+        }
+
         toolWindowManager.unregisterToolWindow(TOOL_WINDOW_ID);
     }
 
@@ -56,7 +67,7 @@ public class ScriptMonkeyToolWindow {
         }
     }
 
-   public ContentManager getContentManager() {
-     return toolWindow.getContentManager();
-   }
+    public ContentManager getContentManager() {
+        return toolWindow.getContentManager();
+    }
 }

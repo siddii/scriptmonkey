@@ -35,6 +35,10 @@ public class PluginScriptRunner {
         runPluginScripts(applicationComponent, runMode, true);
     }
 
+    public void disposeComponent() {
+        project = null;
+        plugin = null;
+    }
 
     public void runPluginScripts(ScriptMonkeyApplicationComponent applicationComponent, PluginScript.RUN_MODE runMode, boolean synchronous) {
         ScriptMonkeySettings settings = applicationComponent.getSettings();
@@ -48,13 +52,15 @@ public class PluginScriptRunner {
                     try {
                         if (project != null) {
                             commandProcessor = new ScriptCommandProcessor(ApplicationManager.getApplication(), project, plugin);
-                        } else {
+                        }
+                        else {
                             commandProcessor = new ScriptCommandProcessor(ApplicationManager.getApplication());
                         }
 
                         if (synchronous) {
                             commandProcessor.processScriptFileSynchronously(scriptFile, new ScriptProcessorCallbackImpl(pluginScript, scriptFile));
-                        } else {
+                        }
+                        else {
                             commandProcessor.processScriptFile(scriptFile, new ScriptProcessorCallbackImpl(pluginScript, scriptFile));
                         }
                     } catch (Exception e) {
@@ -74,18 +80,24 @@ public class PluginScriptRunner {
             this.pluginScriptFile = pluginScriptFile;
         }
 
+        @Override
         public void success() {
             logger.info("Completed running plugin script '" + pluginScript.getFilePath() + "'");
         }
 
+        @Override
         public void failure(Throwable throwable) {
             logger.error("Error running script file = " + pluginScriptFile, throwable);
         }
 
-        public void cancel() {
-            logger.warn("Scripting execution stopped!");
+        @Override
+        public void println(String msg) {
+            logger.warn(msg);
         }
 
+        @Override
+        public boolean hadOutput() {
+            return false;
+        }
     }
-
 }

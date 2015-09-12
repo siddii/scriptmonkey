@@ -5,8 +5,8 @@
 
   <property name="sourceZip" value="./${ant.project.name}_src_${idea-plugin.version}.zip"/>
 
-  <property name="jsSource" value="./main/resources/js"/>
-  <property name="jsJar" value="./main/resources/lib/js.jar"/>
+  <property name="jsSource" value="./main/archive/js"/>
+  <property name="jsJar" value="main/resources/com/boxysystems/scriptmonkey/intellij/js.jar"/>
 
   <target name="updateJSJar">
     <echo>Updating ${jsJar} ...</echo>
@@ -17,7 +17,7 @@
 
   <target name="createSourceZip">
     <echo>Creating zip file ${sourceZip}...</echo>
-    <zip basedir="." file="${sourceZip}">
+    <zip basedir="." file="../${sourceZip}">
       <exclude name="**/*.class"/>
     </zip>
   </target>

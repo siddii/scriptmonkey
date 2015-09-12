@@ -2,12 +2,12 @@ var pkgs = new JavaImporter(com.intellij.openapi.application, com.intellij.ide.p
 
 with (pkgs) {
 
-    var logger = new ScriptMonkeyLogger();
+    // vsch: ScriptMonkeyLogger is all statics, no new, just the class
+    var logger = ScriptMonkeyLogger;
 
     function intellijVersion() {
         echo("VersionName = " + intellij.applicationInfo.versionName + ", Build date = " + intellij.applicationInfo.buildDate.getTime() + ", Build No. = " + intellij.applicationInfo.buildNumber);
     }
-
     intellijVersion.docString = "Print intellij version details";
 
     function listPlugins() {
@@ -16,7 +16,6 @@ with (pkgs) {
             echo("Name = " + plugins[i].name + ", Vendor = " + plugins[i].vendor + ", Version = " + plugins[i].version);
         }
     }
-
     listPlugins.docString = "List intellij plugins";
 
     function createAction(plugin, actionID, text, callableObject) {

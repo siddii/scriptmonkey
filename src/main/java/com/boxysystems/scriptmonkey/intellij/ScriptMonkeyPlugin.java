@@ -3,19 +3,15 @@ package com.boxysystems.scriptmonkey.intellij;
 import com.boxysystems.scriptmonkey.intellij.action.ClearEditorAction;
 import com.boxysystems.scriptmonkey.intellij.action.OpenHelpAction;
 import com.boxysystems.scriptmonkey.intellij.action.ShowScriptMonkeyConfigurationAction;
+import com.boxysystems.scriptmonkey.intellij.action.StopScriptAction;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptCommandProcessor;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptMonkeyToolWindow;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptShellPanel;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ProjectComponent;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
-
-import java.net.MalformedURLException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,67 +21,81 @@ import java.net.MalformedURLException;
  */
 public class ScriptMonkeyPlugin implements ProjectComponent {
 
-  private Project project;
+    private Project project;
 
-  private ScriptMonkeyToolWindow toolWindow = null;
+    private ScriptMonkeyToolWindow toolWindow = null;
 
-  private ScriptShellPanel commandShellPanel;
+    private ScriptShellPanel commandShellPanel;
 
+    public ScriptMonkeyPlugin(Project project) {
+        this.project = project;
 
-  public ScriptMonkeyPlugin(Project project) throws MalformedURLException {
-    this.project = project;
-  }
+        // vsch: this may be a problem if someone has multiple projects open with the same classes in different libraries
+        // vsch: TODO: implement a custom class loader that will take the pluginclassloader as the parent and resolve library paths
+        // before resorting to the parent
 
-  public void projectOpened() {
-    toolWindow = new ScriptMonkeyToolWindow(project);
-    ScriptCommandProcessor commandProcessor = new ScriptCommandProcessor(ApplicationManager.getApplication(), project, this);
-
-    ClearEditorAction clearEditorAction = new ClearEditorAction();
-    ShowScriptMonkeyConfigurationAction showConfigurationAction = new ShowScriptMonkeyConfigurationAction();
-    OpenHelpAction openHelpAction = new OpenHelpAction();
-
-    AnAction commandShellActions[] = {clearEditorAction, showConfigurationAction, openHelpAction};
-
-    commandShellPanel = new ScriptShellPanel(commandProcessor, commandShellActions);
-    commandShellPanel.applySettings(ScriptMonkeyApplicationComponent.getInstance().getSettings());
-    clearEditorAction.setScriptShellPanel(commandShellPanel);
-    commandProcessor.processCommandLine();
-    commandProcessor.addGlobalVariable("window", commandShellPanel);
-    toolWindow.addContentPanel("JS Shell", commandShellPanel);
-  }
-
-  public Project getProject() {
-    return project;
-  }
-
-  public ScriptMonkeyToolWindow getToolWindow() {
-    return toolWindow;
-  }
-
-  public void projectClosed() {
-    if (toolWindow != null) {
-      toolWindow.unregisterToolWindow();
+        ApplicationManager.getApplication().getComponent(ScriptMonkeyApplicationComponent.class).augmentClassLoader(project);
     }
-  }
 
-  public void initComponent() {
-    // empty
-  }
+    public void projectOpened() {
+        toolWindow = new ScriptMonkeyToolWindow(project);
+        ScriptCommandProcessor commandProcessor = new ScriptCommandProcessor(ApplicationManager.getApplication(), project, this);
 
-  public void disposeComponent() {
-    // empty
-  }
+        ClearEditorAction clearEditorAction = new ClearEditorAction();
+        ShowScriptMonkeyConfigurationAction showConfigurationAction = new ShowScriptMonkeyConfigurationAction();
+        StopScriptAction stopScriptAction = new StopScriptAction();
+        OpenHelpAction openHelpAction = new OpenHelpAction();
 
-  @NotNull
-  public String getComponentName() {
-    return this.getClass().getName();
-  }
+        AnAction commandShellActions[] = {clearEditorAction, stopScriptAction, showConfigurationAction, openHelpAction };
 
-  public static ScriptMonkeyPlugin getInstance(Project project) {
-    return project.getComponent(ScriptMonkeyPlugin.class);
-  }
+        commandProcessor.setCommandShell(true);
+        commandShellPanel = new ScriptShellPanel(commandProcessor, commandShellActions);
 
-  public ScriptShellPanel getCommandShellPanel() {
-    return commandShellPanel;
-  }
+        commandShellPanel.applySettings(ScriptMonkeyApplicationComponent.getInstance().getSettings());
+        clearEditorAction.setScriptShellPanel(commandShellPanel);
+        toolWindow.addContentPanel("JS Shell", commandShellPanel);
+        commandProcessor.addGlobalVariable("window", commandShellPanel);
+
+        // now that all is setup we can run the command.
+        commandProcessor.processCommandLine();
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public ScriptMonkeyToolWindow getToolWindow() {
+        return toolWindow;
+    }
+
+    public void projectClosed() {
+        if (toolWindow != null) {
+            toolWindow.unregisterToolWindow();
+        }
+
+        toolWindow = null;
+        commandShellPanel = null;
+        project = null;
+    }
+
+    public void initComponent() {
+        // empty
+    }
+
+    public void disposeComponent() {
+        // empty
+    }
+
+    @NotNull
+    public String getComponentName() {
+        return this.getClass().getName();
+    }
+
+    public static ScriptMonkeyPlugin getInstance(Project project) {
+        return project.getComponent(ScriptMonkeyPlugin.class);
+    }
+
+    public ScriptShellPanel getCommandShellPanel() {
+        return commandShellPanel;
+    }
 }
