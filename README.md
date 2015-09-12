@@ -26,7 +26,8 @@ Version 1.2.x WIP switch to Nashorn engine
 ---------------------
 The source is being reworked to be Nashorn compatible so this version is experimental. It works on IDEA CE 14 and 15 EAP. 
 
-**You will need to run your IDEA under jdk 1.8** to do this you need to refer to the instructions [Selecting the JDK version the IDE will run under](https://intellij-support.jetbrains.com/hc/en-us/articles/206827547-Selecting-the-JDK-version-the-IDE-will-run-under)
+**You no longer will need to run your IDEA under jdk 1.8** to do this you need to refer to the instructions [Selecting the JDK version the IDE will run under](https://intellij-support.jetbrains.com/hc/en-us/articles/206827547-Selecting-the-JDK-version-the-IDE-will-run-under)
+As of build **1.2.7** the plugin **works** with the **bundled** OpenJdk on OS X. So if you have the a release with bundled jdk 1.8 you should be able to use the plugin without modifying the boot jdk.  
 
 To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root of the project to get the following enhancements:
 
@@ -53,7 +54,7 @@ To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root 
 
 -   Fixed Stop Script Action did not work on scripts that were in a tight loop without sleep(). This was done by setting the thread interrupt and waiting a maximum of 2 seconds for it to terminate. Failing that the thread is rudely stopped. So now `while(true) {}` no longer hangs forever refusing to stop.  
 
-    Polite, long running scripts should periodically check `java.lang.Thread.interrupted()` and if returns true then they should terminate their processing.
+    Polite, long running scripts should periodically check `java.lang.Thread.interrupted()` and if it returns true then they should terminate their processing.
 
     There is a caveat with trying to stop a runaway script. This code will not stop because it catches `java.lang.ThreadDeath` and continues running:
 
@@ -67,7 +68,7 @@ To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root 
     }
     ```    
 
-    For tricky code like that we have two consecutive thread stops that make even this code give up the ghost by having the second stop catch it in its exception handler. However, this code is unstoppable, no matter how many stops and cancels are issued:
+    For tricky code like that we have two consecutive thread stops that make even this code give up the ghost by having the second stop catch it in its exception handler. However, this code is unstoppable when running the IDEA under debugger (when debugging the plugin), no matter how many stops and cancels are issued:
     
     ```javascript
     while(true) { 
@@ -77,6 +78,9 @@ To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root 
         } 
     }
     ```    
+
+    It does stop *most of the time* when running non-debug session. It is a timing issue since debugging slows down execution and makes the multiple stops not as effective.
+    
 -   Add Stop Script Action button to JS Shell so that runaway shell scripts could be interrupted.     
 -   JS Shell pane now flushes accumulated text from a running script every 100ms instead of waiting for it to terminate before outputing it.
 
