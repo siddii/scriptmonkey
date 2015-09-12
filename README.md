@@ -41,7 +41,15 @@ To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root 
         
     You can edit any text in the pane, but to execute it you will need to copy it to the bottom of the file, after the last prompt. If the pasted text ends in \n then it will be immediately executed, otherwise it will execute when you hit return at the end of text.
     
-#### Version 1.2.5
+#### Version 1.2.7
+
+- Fix EditorImpl not released, again. Finally figured out that it was the Script panels that were causing this not the JS Shell panel.
+
+- Change code to modify classloader to find nashorn.jar to the same one used in vsch/idea-multimarkdown plugin.
+
+- Change ant build of source zip to put the zip under project root instead of under src so it does not complain about including itself.
+
+#### Version 1.2.6
 
 -   Fixed Stop Script Action did not work on scripts that were in a tight loop without sleep(). This was done by setting the thread interrupt and waiting a maximum of 2 seconds for it to terminate. Failing that the thread is rudely stopped. So now `while(true) {}` no longer hangs forever refusing to stop.  
 
@@ -72,7 +80,7 @@ To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root 
 -   Add Stop Script Action button to JS Shell so that runaway shell scripts could be interrupted.     
 -   JS Shell pane now flushes accumulated text from a running script every 100ms instead of waiting for it to terminate before outputing it.
 
-#### Version 1.2.5
+#### Version 1.2.4
 
 -   Fix EditorImpl was not released exception on closing of the IDEA when debugging other plugins with ScriptMonkey plugin installed.
 
