@@ -12,7 +12,7 @@ import java.util.concurrent.Future;
  * To change this template use File | Settings | File Templates.
  */
 interface ShellCommandProcessor {
-    String executeCommand(String cmd, int lineOffset, int firstLineColumnOffset, ScriptTaskInterrupter taskStopSetter, ScriptProcessorPrinter printer);
+    Object executeCommand(String cmd, int lineOffset, int firstLineColumnOffset, ScriptTaskInterrupter taskStopSetter, ScriptProcessorPrinter printer);
     String getPrompt();
     boolean isCommandShell();
     Project getProject();

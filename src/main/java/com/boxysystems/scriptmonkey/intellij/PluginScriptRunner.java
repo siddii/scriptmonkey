@@ -80,16 +80,24 @@ public class PluginScriptRunner {
             this.pluginScriptFile = pluginScriptFile;
         }
 
+        @Override
         public void success() {
             logger.info("Completed running plugin script '" + pluginScript.getFilePath() + "'");
         }
 
+        @Override
         public void failure(Throwable throwable) {
             logger.error("Error running script file = " + pluginScriptFile, throwable);
         }
 
+        @Override
         public void println(String msg) {
             logger.warn(msg);
+        }
+
+        @Override
+        public boolean hadOutput() {
+            return false;
         }
     }
 }

@@ -49,8 +49,10 @@ public class RunScriptAction extends ScriptShellPanelAction {
         return null;
     }
 
+    // vsch: changed to re-use the same commandProcessor so that globals are preserved accross runs to allow for
+    // more intuitive re-run as if in the JS Shell which keeps the same processor for multiple commands and enabled
+    // this as a script shell panel so that these globals can be examined on the command line for debug purposes
     public void actionPerformed(AnActionEvent event) {
-
         Project project = ProjectUtil.getProject(event);
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
 
@@ -60,18 +62,13 @@ public class RunScriptAction extends ScriptShellPanelAction {
             File scriptFile = getScriptFile(editor);
 
             if (scriptFile != null) {
-
                 ScriptMonkeyPlugin scriptMonkeyPlugin = ScriptMonkeyPlugin.getInstance(project);
-                ScriptCommandProcessor commandProcessor = new ScriptCommandProcessor(ApplicationManager.getApplication(), project, scriptMonkeyPlugin);
-                commandProcessor.setCommandShell(false);
-
                 String contentName = scriptFile.getName();
-
                 ScriptMonkeyToolWindow toolWindow = scriptMonkeyPlugin.getToolWindow();
-
                 Content content = toolWindow.getContentManager().findContent(contentName);
-
                 ScriptShellPanel panel;
+
+                ScriptCommandProcessor commandProcessor;
                 if (content == null) {
                     RerunScriptAction rerunAction = new RerunScriptAction();
                     StopScriptAction stopScriptAction = new StopScriptAction();
@@ -80,16 +77,25 @@ public class RunScriptAction extends ScriptShellPanelAction {
 
                     AnAction scriptConsoleActions[] = {rerunAction, stopScriptAction, closeAction, openHelpAction};
 
+                    commandProcessor = new ScriptCommandProcessor(ApplicationManager.getApplication(), project, scriptMonkeyPlugin);
+
+                    // vsch: make it a panel so that we can examine globals after the run for debug purposes
+                    commandProcessor.setCommandShell(true);
                     panel = new ScriptShellPanel(commandProcessor, scriptConsoleActions);
+
                     content = toolWindow.addContentPanel(contentName, panel);
+                    commandProcessor.addGlobalVariable("window", panel);
                 } else {
                     ScriptShellTabContent tabContent = (ScriptShellTabContent) content.getComponent();
                     panel = tabContent.getScriptShellPanel();
                     panel.toggleActions();
+                    commandProcessor = (ScriptCommandProcessor) panel.getShellCommandProcessor();
                 }
-                commandProcessor.addGlobalVariable("window", panel);
+
                 panel.clear();
                 panel.println("Running script '" + scriptFile.getAbsolutePath() + "' ...");
+
+                panel.getDocument().beginUpdate();
                 ScriptCommandProcessor.ScriptRunningTask task = commandProcessor.processScript(scriptContent, scriptFile.getAbsolutePath(), new RunScriptActionCallback(panel), panel.getStopScriptAction());
 
                 toolWindow.activate();
@@ -115,6 +121,7 @@ public class RunScriptAction extends ScriptShellPanelAction {
             this.panel = panel;
         }
 
+        @Override
         public void success() {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -124,6 +131,7 @@ public class RunScriptAction extends ScriptShellPanelAction {
             });
         }
 
+        @Override
         public void failure(final Throwable throwable) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -134,13 +142,20 @@ public class RunScriptAction extends ScriptShellPanelAction {
             });
         }
 
+        @Override
         public void println(String msg) {
             panel.println(msg);
         }
 
         public void finishUp() {
+            panel.getDocument().endUpdate(true);
+            panel.printPrompt();
             panel.toggleActions();
         }
 
+        @Override
+        public boolean hadOutput() {
+            return panel.hadOutput();
+        }
     }
 }

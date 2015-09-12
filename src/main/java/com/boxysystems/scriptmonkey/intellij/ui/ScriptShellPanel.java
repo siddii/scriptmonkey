@@ -24,16 +24,15 @@ import com.intellij.openapi.project.Project;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class ScriptShellPanel extends JPanel implements ScriptProcessorPrinter {
-
     private ShellCommandProcessor shellCommandProcessor;
     private AnAction[] actions;
     private EditorImpl editor;
 
-    private final ExecutorService commandExecutor = Executors.newSingleThreadExecutor();
+    public boolean isScriptShell() {
+        return shellCommandProcessor.isCommandShell();
+    }
 
     public ScriptShellPanel(ShellCommandProcessor cmdProc, AnAction actions[]) {
         this.shellCommandProcessor = cmdProc;
@@ -158,6 +157,7 @@ public class ScriptShellPanel extends JPanel implements ScriptProcessorPrinter {
         d.endUpdate();
     }
 
+    @Override
     public void println(final String s) {
         CommandShellDocument d = getDocument();
         d.beginUpdate();
@@ -165,10 +165,9 @@ public class ScriptShellPanel extends JPanel implements ScriptProcessorPrinter {
         d.endUpdate();
     }
 
-    //TODO: Need to implement this
-    public void stopScript() {
-        commandExecutor.shutdownNow();
-        println("Script cancelled!");
+    @Override
+    public boolean hadOutput() {
+        return getDocument().hadOutput();
     }
 
     public void printPrompt() {
@@ -181,22 +180,22 @@ public class ScriptShellPanel extends JPanel implements ScriptProcessorPrinter {
         return shellCommandProcessor.getPrompt();
     }
 
-    public String executeCommand(String cmd, int lineOffset, int firstLineColumnOffset) {
+    public Object executeCommand(String cmd, int lineOffset, int firstLineColumnOffset) {
         // TODO: make document updates handle setting readonly
         //        editor.getDocument().setReadOnly(false);
         getDocument().beginUpdate();
         StopScriptAction stopScriptAction = getStopScriptAction();
         stopScriptAction.setEnabled(true);
-        String s = shellCommandProcessor.executeCommand(cmd, lineOffset, firstLineColumnOffset, stopScriptAction, this);
+        Object result = shellCommandProcessor.executeCommand(cmd, lineOffset, firstLineColumnOffset, stopScriptAction, this);
         stopScriptAction.setEnabled(false);
         // TODO: make document updates handle setting readonly
         //        editor.getDocument().setReadOnly(true);
         getDocument().endUpdate();
-        return s;
+        return result;
     }
 
-    public ExecutorService getCommandExecutor() {
-        return commandExecutor;
+    public ShellCommandProcessor getShellCommandProcessor() {
+        return shellCommandProcessor;
     }
 
     public EditorImpl getEditor() {

@@ -42,6 +42,7 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
     private StringBuilder batchedText;
     private boolean batchedReplace;
     private boolean batchHadOutput;
+    private boolean hadOutput;
     private ArrayList<Boolean> batchHadOutputStack = new ArrayList<Boolean>(10);
     private long lastOutputTime;
 
@@ -55,6 +56,7 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
         this.batchedText = null;
         this.batchedReplace = true;
         this.batchHadOutput = false;
+        this.hadOutput = false;
         this.lastOutputTime = System.currentTimeMillis();
     }
 
@@ -64,6 +66,7 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
         if (updating == 0) {
             batchedReplace = false;
             lastOutputTime = System.currentTimeMillis();
+            hadOutput = false;
         }
         else {
             // save old value
@@ -111,6 +114,10 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
         return updating != 0;
     }
 
+    public boolean hadOutput() {
+        return hadOutput;
+    }
+
     private void applyBatchedText(final boolean decrementUpdating) {
         if (batchedText != null) {
             final StringBuilder text = batchedText;
@@ -147,13 +154,15 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
     private void appendBatchedText(@NotNull String text) {
         if (batchedText == null) batchedText = new StringBuilder(text);
         else batchedText.append(text);
-        if (text.length() > 0) batchHadOutput = true;
+        if (text.length() > 0)
+            hadOutput = batchHadOutput = true;
     }
 
     private void setBatchedText(@NotNull String text) {
         batchedText = new StringBuilder(text);
         batchedReplace = true;
-        if (text.length() > 0) batchHadOutput = true;
+        if (text.length() > 0)
+            hadOutput = batchHadOutput = true;
     }
 
     public void safeInsertString(final int offset, String text) {

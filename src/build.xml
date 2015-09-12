@@ -6,7 +6,7 @@
   <property name="sourceZip" value="./${ant.project.name}_src_${idea-plugin.version}.zip"/>
 
   <property name="jsSource" value="./main/archive/js"/>
-  <property name="jsJar" value="./main/resources/lib/js.jar"/>
+  <property name="jsJar" value="main/resources/com/boxysystems/scriptmonkey/intellij/js.jar"/>
 
   <target name="updateJSJar">
     <echo>Updating ${jsJar} ...</echo>

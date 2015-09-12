@@ -48,7 +48,9 @@ public class ScriptMonkeyPlugin implements ProjectComponent {
 
         AnAction commandShellActions[] = {clearEditorAction, stopScriptAction, showConfigurationAction, openHelpAction };
 
+        commandProcessor.setCommandShell(true);
         commandShellPanel = new ScriptShellPanel(commandProcessor, commandShellActions);
+
         commandShellPanel.applySettings(ScriptMonkeyApplicationComponent.getInstance().getSettings());
         clearEditorAction.setScriptShellPanel(commandShellPanel);
         toolWindow.addContentPanel("JS Shell", commandShellPanel);

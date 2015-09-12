@@ -10,7 +10,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
-import com.intellij.util.lang.UrlClassLoader;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -132,7 +132,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         new Thread(new Runnable() {
             public void run() {
                 runGlobalScripts();
-                engineReady.countDown();
             }
         }).start();
     }
@@ -149,7 +148,29 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         this.commandShell = commandShell;
     }
 
-    public String executeCommand(final String cmd, final int lineOffset, final int firstLineColumnOffset, ScriptTaskInterrupter taskInterrupter, ScriptProcessorPrinter printer) {
+    protected boolean allWhiteSpace(String text) {
+        int iMax = text.length();
+        for (int i = 0; i < iMax; i++) {
+            if (text.charAt(i) != ' ' && text.charAt(i) != '\n') return false;
+        }
+        return true;
+    }
+
+    protected String formatStringResult(String text) {
+        int iMax = text.length();
+        int eolCount = 0;
+        for (int i = 0; i < iMax; i++) {
+            if (text.charAt(i) == '\n' && ++eolCount > 1) break;
+        }
+        if (eolCount > 1) {
+            text = StringEscapeUtils.escapeJava(text).replace("\\n", "\\n\" + \n\"");
+            return text;
+        }
+        return StringEscapeUtils.escapeJava(text);
+    }
+
+    public Object executeCommand(final String cmd, final int lineOffset, final int firstLineColumnOffset, ScriptTaskInterrupter taskInterrupter, final ScriptProcessorPrinter printer) {
+        final Object[] evalResult = {null};
         final String[] result = new String[1];
         try {
             engineReady.await();
@@ -160,10 +181,17 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
             InterruptibleScriptTaskImpl scriptSafetyNet = new InterruptibleScriptTaskImpl(printer, new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    Object evalResult = null;
                     try {
-                        evalResult = engine.eval(cmd);
-                        result[0] = (evalResult == null) ? null : evalResult.toString();
+                        evalResult[0] = engine.eval(cmd);
+                        if (evalResult[0] == null) {
+                            result[0] = (printer == null || printer.hadOutput() || allWhiteSpace(cmd)) ? null : "null";
+                        }
+                        else if (evalResult[0] instanceof String) {
+                            result[0] = "\"" + formatStringResult((String) evalResult[0]) + "\"";
+                        }
+                        else {
+                            result[0] = evalResult[0].toString();
+                        }
                     } catch (ScriptException se) {
                         // adjust the position of the error to correspond to actual source
                         result[0] = se.getMessage();
@@ -200,7 +228,11 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
             result[0] = e.toString();
         }
 
-        return result[0];
+        if (printer != null && result[0] != null && result[0].length() > 0) {
+            printer.println(result[0]);
+        }
+
+        return evalResult[0];
     }
 
     private void createScriptEngine(ScriptMonkeyPlugin scriptMonkeyPlugin) {
@@ -242,6 +274,8 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
     }
 
     private void runGlobalScripts() {
+        if (engineReady.getCount() == 0) return;
+
         try {
             ScriptMonkeyApplicationComponent applicationComponent = ApplicationManager.getApplication().getComponent(ScriptMonkeyApplicationComponent.class);
             File jsFolder = new File(applicationComponent.getSettings().getHomeFolder(), Constants.JS_FOLDER_NAME);
@@ -265,6 +299,8 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        engineReady.countDown();
     }
 
     private void executeScripts(File globalScripts) {
@@ -380,6 +416,27 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
                         scriptSafetyNet.stop(); // that'll learn ya
                         Thread.yield();
                         if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
+                        Thread.yield();
+                        if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
+                        Thread.yield();
+                        if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
+                        Thread.yield();
+                        if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
+                        Thread.yield();
+                        if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
+
+                        if (scriptSafetyNet.isAlive()) {
+                            // this one is a hard one
+                            scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
+                            Thread.yield();
+                            scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
+                            Thread.yield();
+                            scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
+                            Thread.yield();
+                            scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
+                            Thread.yield();
+                            scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
+                        }
 
                         // vsch: just one stop is not enough. If javascript catches() the exception (with a twist) then it also
                         // catches java.lang.ThreadDeath and continues running here is the JavaScript that manages to survive

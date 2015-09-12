@@ -12,16 +12,15 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class RerunScriptAction extends ScriptShellPanelAction {
 
-  private RunScriptAction runScriptAction = new RunScriptAction();
+    private RunScriptAction runScriptAction = new RunScriptAction();
 
-  public RerunScriptAction() {
-    super("Rerun",
-      "Re-run the script",
-      Icons.RERUN_ICON);
-  }
+    public RerunScriptAction() {
+        super("Rerun",
+                "Re-run the script",
+                Icons.RERUN_ICON);
+    }
 
-
-  public void actionPerformed(AnActionEvent anActionEvent) {
-    runScriptAction.actionPerformed(anActionEvent);
-  }
+    public void actionPerformed(AnActionEvent anActionEvent) {
+        runScriptAction.actionPerformed(anActionEvent);
+    }
 }

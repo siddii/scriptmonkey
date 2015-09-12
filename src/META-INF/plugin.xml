@@ -43,11 +43,16 @@
             homepage</a>
         ]]>
   </description>
-    <version>1.2.7</version>
+    <version>1.2.8</version>
     <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
     <idea-version since-build="141.1550"/>
 
     <change-notes><![CDATA[
+      <ul><u>Version 1.2.8 changes:</u>
+        <li>Fix missing scripts jar for component initialization of the scripts directory under build 142.x of IDEs.</li>
+        <li>Change script panels now re-use command processor between runs and enable the interactive prompt so that globals can be examined after script is evaluated to ease debugging.</li>
+        <li>Change result printing in interactive shell to do some formatting based on result type and also print null for commands that return null and are not all white space.</li>
+      </ul>
       <ul><u>Version 1.2.7 changes:</u>
         <li>Fix EditorImpl not released, again. Finally figured out that it was the Script panels that were causing this.</li>
         <li>Change code to modify classloader to find nashorn.jar to the same one used in vsch/idea-multimarkdown plugin.</li>

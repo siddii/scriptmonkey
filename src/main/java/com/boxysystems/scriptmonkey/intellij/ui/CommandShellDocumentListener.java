@@ -4,6 +4,8 @@ import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.Executors;
+
 /**
  * Created by IntelliJ IDEA.
  * User: shameed
@@ -58,32 +60,19 @@ public class CommandShellDocumentListener implements DocumentListener {
                 //        editor.getDocument().setReadOnly(false);
                 document.beginUpdate();
 
-                // this needs to be done in the executor thread
-                scriptShellPanel.getCommandExecutor().execute(new Runnable() {
+                // this needs to be done in a separate thread not to lockup the ui
+                Executors.newCachedThreadPool().execute(new Runnable() {
                     public void run() {
                         // make sure if script output any text to the window, it is terminated by \n
                         document.beginUpdate();
-                        final String result = scriptShellPanel.executeCommand(cmdTrimmed, startLine, firstLineColumnOffset);
+                        final Object result = scriptShellPanel.executeCommand(cmdTrimmed, startLine, firstLineColumnOffset);
                         document.endUpdate(true);
 
-                        // this needs to be done in a dispatch thread
-                        document.runWriteAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (result != null) {
-                                    document.beginUpdate();
-                                    scriptShellPanel.print(result + "\n");
-                                    document.endUpdate(true);
-                                }
-                                scriptShellPanel.printPrompt();
-                                // this is done by the last end update
-                                //scriptShellPanel.setMark();
-                                // TODO: make document updates handle setting readonly
-                                //        editor.getDocument().setReadOnly(true);
-                                document.endUpdate();
-                                //logger.error("mark: " + document.getMarkOffset() + ", textLength: " + document.getTextLength());
-                            }
-                        });
+                        scriptShellPanel.printPrompt();
+                        // TODO: make document updates handle setting readonly
+                        //        editor.getDocument().setReadOnly(true);
+                        document.endUpdate();
+                        //logger.error("mark: " + document.getMarkOffset() + ", textLength: " + document.getTextLength());
                     }
                 });
             }
