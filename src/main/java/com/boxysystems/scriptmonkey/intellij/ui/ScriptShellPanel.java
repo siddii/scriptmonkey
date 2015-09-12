@@ -7,7 +7,6 @@ import com.boxysystems.scriptmonkey.intellij.action.RerunScriptAction;
 import com.boxysystems.scriptmonkey.intellij.action.StopScriptAction;
 import com.intellij.ide.highlighter.HighlighterFactory;
 import com.intellij.lang.Language;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -18,19 +17,17 @@ import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.editor.impl.EditorImpl;
-import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.fileTypes.ex.FileTypeManagerEx;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Disposer;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ScriptShellPanel extends JPanel {
+public class ScriptShellPanel extends JPanel implements ScriptProcessorPrinter {
 
     private ShellCommandProcessor shellCommandProcessor;
     private AnAction[] actions;
@@ -89,7 +86,6 @@ public class ScriptShellPanel extends JPanel {
         if (shellCommandProcessor.isCommandShell()) {
             clear();
         }
-
     }
 
     public void disposeComponent() {
@@ -104,14 +100,15 @@ public class ScriptShellPanel extends JPanel {
             @Override
             public void run() {
                 if (!thisEditor.isDisposed()) {
-                    EditorFactory.getInstance().releaseEditor(editor);
+                    EditorFactory.getInstance().releaseEditor(thisEditor);
                 }
             }
         };
 
         if (application.isUnitTestMode() || application.isDispatchThread()) {
             runnable.run();
-        } else {
+        }
+        else {
             application.invokeLater(runnable);
         }
 
@@ -184,33 +181,14 @@ public class ScriptShellPanel extends JPanel {
         return shellCommandProcessor.getPrompt();
     }
 
-    public String executeCommand(String cmd) {
-        // TODO: make document updates handle setting readonly
-        //        editor.getDocument().setReadOnly(false);
-        getDocument().beginUpdate();
-        String s = shellCommandProcessor.executeCommand(cmd);
-        // TODO: make document updates handle setting readonly
-        //        editor.getDocument().setReadOnly(true);
-        getDocument().endUpdate();
-        return s;
-    }
-
-    public String executeCommand(String cmd, int lineOffset) {
-        // TODO: make document updates handle setting readonly
-        //        editor.getDocument().setReadOnly(false);
-        getDocument().beginUpdate();
-        String s = shellCommandProcessor.executeCommand(cmd, lineOffset);
-        // TODO: make document updates handle setting readonly
-        //        editor.getDocument().setReadOnly(true);
-        getDocument().endUpdate();
-        return s;
-    }
-
     public String executeCommand(String cmd, int lineOffset, int firstLineColumnOffset) {
         // TODO: make document updates handle setting readonly
         //        editor.getDocument().setReadOnly(false);
         getDocument().beginUpdate();
-        String s = shellCommandProcessor.executeCommand(cmd, lineOffset, firstLineColumnOffset);
+        StopScriptAction stopScriptAction = getStopScriptAction();
+        stopScriptAction.setEnabled(true);
+        String s = shellCommandProcessor.executeCommand(cmd, lineOffset, firstLineColumnOffset, stopScriptAction, this);
+        stopScriptAction.setEnabled(false);
         // TODO: make document updates handle setting readonly
         //        editor.getDocument().setReadOnly(true);
         getDocument().endUpdate();

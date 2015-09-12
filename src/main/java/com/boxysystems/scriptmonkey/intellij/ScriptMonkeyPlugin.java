@@ -3,6 +3,7 @@ package com.boxysystems.scriptmonkey.intellij;
 import com.boxysystems.scriptmonkey.intellij.action.ClearEditorAction;
 import com.boxysystems.scriptmonkey.intellij.action.OpenHelpAction;
 import com.boxysystems.scriptmonkey.intellij.action.ShowScriptMonkeyConfigurationAction;
+import com.boxysystems.scriptmonkey.intellij.action.StopScriptAction;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptCommandProcessor;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptMonkeyToolWindow;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptShellPanel;
@@ -11,8 +12,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
-
-import java.net.MalformedURLException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -38,9 +37,10 @@ public class ScriptMonkeyPlugin implements ProjectComponent {
 
         ClearEditorAction clearEditorAction = new ClearEditorAction();
         ShowScriptMonkeyConfigurationAction showConfigurationAction = new ShowScriptMonkeyConfigurationAction();
+        StopScriptAction stopScriptAction = new StopScriptAction();
         OpenHelpAction openHelpAction = new OpenHelpAction();
 
-        AnAction commandShellActions[] = {clearEditorAction, showConfigurationAction, openHelpAction};
+        AnAction commandShellActions[] = {clearEditorAction, stopScriptAction, showConfigurationAction, openHelpAction };
 
         commandShellPanel = new ScriptShellPanel(commandProcessor, commandShellActions);
         commandShellPanel.applySettings(ScriptMonkeyApplicationComponent.getInstance().getSettings());
@@ -64,6 +64,14 @@ public class ScriptMonkeyPlugin implements ProjectComponent {
         if (toolWindow != null) {
             toolWindow.unregisterToolWindow();
         }
+
+        if (commandShellPanel != null) {
+            commandShellPanel.disposeComponent();
+        }
+
+        toolWindow = null;
+        commandShellPanel = null;
+        project = null;
     }
 
     public void initComponent() {
@@ -72,7 +80,6 @@ public class ScriptMonkeyPlugin implements ProjectComponent {
 
     public void disposeComponent() {
         // empty
-        commandShellPanel.disposeComponent();
     }
 
     @NotNull

@@ -121,9 +121,10 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         });
     }
 
-    public ScriptRunningTask processScript(final String scriptContent, final String scriptFileName, final ScriptProcessorCallback callback) {
+    public ScriptRunningTask processScript(final String scriptContent, final String scriptFileName, final ScriptProcessorCallback callback, final ScriptTaskInterrupter taskInterrupter) {
         if (project != null) {
             ScriptRunningTask task = new ScriptRunningTask("Running script...", scriptContent, scriptFileName, callback);
+            taskInterrupter.setTask(task);
             task.queue();
             return task;
         }
@@ -151,42 +152,58 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         this.commandShell = commandShell;
     }
 
-    public String executeCommand(String cmd) {
-        return executeCommand(cmd, 0, 0);
-    }
-
-    public String executeCommand(String cmd, int lineOffset) {
-        return executeCommand(cmd, lineOffset, 0);
-    }
-
-    public String executeCommand(String cmd, int lineOffset, int firstLineColumnOffset) {
-        String res;
+    public String executeCommand(final String cmd, final int lineOffset, final int firstLineColumnOffset, ScriptTaskInterrupter taskInterrupter, ScriptProcessorPrinter printer) {
+        final String[] result = new String[1];
         try {
             engineReady.await();
+
             // vsch: set the script file name for exceptions and __FILE__ setting
             engine.getContext().setAttribute(ScriptEngine.FILENAME, "<Script Monkey JS Shell>", ScriptContext.ENGINE_SCOPE);
-            Object tmp = engine.eval(cmd);
-            res = (tmp == null) ? null : tmp.toString();
-        } catch (InterruptedException ie) {
-            res = ie.getMessage();
-        } catch (ScriptException se) {
-            // adjust the position of the error to correspond to actual source
-            res = se.getMessage();
-            if (se.getFileName().equals("<Script Monkey JS Shell>")) {
-                //if (se.getFileName().equals("<eval>")) {
-                int lineNumber = se.getLineNumber() + lineOffset;
-                int colNumber = se.getColumnNumber() + (se.getLineNumber() == 1 ? firstLineColumnOffset : 0);
-                res = res.replace(se.getFileName() + ":" + se.getLineNumber() + ":" + se.getColumnNumber() + " ", ""); //se.getFileName() + ":" + lineNumber + ":" + colNumber);
-                res = res.replace("at line number " + se.getLineNumber(), "at line " + lineNumber);
-                res = res.replace(" at column number " + se.getColumnNumber(), ":" + colNumber);
+
+            InterruptibleScriptTaskImpl scriptSafetyNet = new InterruptibleScriptTaskImpl(printer, new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Object evalResult = null;
+                    try {
+                        evalResult = engine.eval(cmd);
+                        result[0] = (evalResult == null) ? null : evalResult.toString();
+                    } catch (ScriptException se) {
+                        // adjust the position of the error to correspond to actual source
+                        result[0] = se.getMessage();
+                        if (se.getFileName().equals("<Script Monkey JS Shell>")) {
+                            //if (se.getFileName().equals("<eval>")) {
+                            int lineNumber = se.getLineNumber() + lineOffset;
+                            int colNumber = se.getColumnNumber() + (se.getLineNumber() == 1 ? firstLineColumnOffset :
+                                    0);
+                            result[0] = result[0].replace(se.getFileName() + ":" + se.getLineNumber() + ":" + se.getColumnNumber() + " ", ""); //se.getFileName() + ":" + lineNumber + ":" + colNumber);
+                            result[0] = result[0].replace("at line number " + se.getLineNumber(), "at line " + lineNumber);
+                            result[0] = result[0].replace(" at column number " + se.getColumnNumber(), ":" + colNumber);
+                        }
+                    } catch (Throwable se) {
+                        if (se instanceof ThreadDeath) {
+                            result[0] = "java.lang.ThreadDeath";
+                        }
+                        else {
+                            result[0] = se.getMessage() != null ? se.getMessage() : se.getClass().toString();
+                        }
+                    }
+                }
+            }), 1000); // only wait a second for interrupt, this is hand rolled code so don't expect long processing that will respond to interrupts
+
+            if (taskInterrupter != null) {
+                taskInterrupter.setTask(scriptSafetyNet);
             }
-            //}
+
+            scriptSafetyNet.run();
+        } catch (InterruptedException e) {
+            result[0] = e.getMessage();
         } catch (Exception e) {
-            res = e.toString();
+            result[0] = e.toString();
         } catch (AssertionError e) {
-            res = e.toString();
+            result[0] = e.toString();
         }
-        return res;
+
+        return result[0];
     }
 
     private void createScriptEngine(ScriptMonkeyPlugin scriptMonkeyPlugin) {
@@ -289,11 +306,107 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         }
     }
 
-    public class ScriptRunningTask extends Task.Backgroundable {
+    public interface InterruptibleScriptTask {
+        void cancel();
+        boolean isRunning();
+    }
+
+    protected class InterruptibleScriptTaskImpl implements InterruptibleScriptTask {
+        protected Thread scriptSafetyNet;
+        protected ScriptProcessorPrinter printer;
+        protected long interrupWaitMillis;
+
+        InterruptibleScriptTaskImpl(ScriptProcessorPrinter printer, Thread scriptSafetyNet) {
+            this.scriptSafetyNet = scriptSafetyNet;
+            this.printer = printer;
+            this.interrupWaitMillis = 2000;
+        }
+
+        InterruptibleScriptTaskImpl(ScriptProcessorPrinter printer, Thread scriptSafetyNet, int interruptWaitMillis) {
+            this.scriptSafetyNet = scriptSafetyNet;
+            this.printer = printer;
+            this.interrupWaitMillis = interruptWaitMillis;
+        }
+
+        public void start() {
+            scriptSafetyNet.start();
+        }
+
+        public void run() throws InterruptedException {
+            scriptSafetyNet.start();
+            scriptSafetyNet.join(0);
+        }
+
+        public void join(int i) throws InterruptedException {
+            scriptSafetyNet.join(i);
+        }
+
+        public void cancel() {
+            // vsch: give it 2 second to terminate gracefully then kill it
+            // signal interruption to give it a chance to gracefully terminate which the JS script can
+            // test for the interrupt using: if (java.lang.Thread.interrupted())
+            if (scriptSafetyNet == null) return;
+
+            if (!scriptSafetyNet.isInterrupted()) {
+                if (printer != null) printer.println("Attempting to interrupt script thread.");
+                scriptSafetyNet.interrupt();
+
+                // let it try and catch this one
+                Thread.yield();
+            }
+
+            Executors.newCachedThreadPool().submit(new Runnable() {
+                @Override
+                public void run() {
+                    boolean firstWait = true;
+                    for (long i = 0; i < interrupWaitMillis; i += 100) {
+                        if (!scriptSafetyNet.isAlive()) break;
+                        if (firstWait && printer != null) {
+                            printer.println("Waiting for thread to respond to interrupt...");
+                            firstWait = false;
+                        }
+
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            // we'll finish soon enough
+                        }
+                    }
+
+                    if (scriptSafetyNet.isAlive()) {
+                        // vsch: we have to take more extreme measures it is stuck in a tight loop and not responding
+                        // javadocs say don't use Thread.stop blah, blah, blah, but it is the only thing that works
+                        // which does not require the cooperation of the running thread. Programming is not always a
+                        // gentleman's tea party and you need the ability to boot misbehaving code.
+                        if (printer != null) printer.println("Script thread is not responding. Stopping thread...");
+                        scriptSafetyNet.interrupt();
+                        scriptSafetyNet.stop(); // that'll learn ya
+                        scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
+
+                        // vsch: just one stop is not enough. If javascript catches() the exception (with a twist) then it also
+                        // catches java.lang.ThreadDeath and continues running here is the JavaScript that manages to survive
+                        // a single thread death:
+                        // while(true) { try { java.lang.Thread.sleep(100); } catch (e) {  } }
+                        // this one is unstoppable. If there is no processing in the catch() block then it will manage
+                        // to handle multiple consecutive stops and keep going.
+                        // however, the second one catches it in its exception handler (I'm guessing) and causes the thread
+                        // to terminate. Talk about 9 lives.
+                    }
+                }
+            });
+        }
+
+        public boolean isRunning() {
+            return scriptSafetyNet.isAlive();
+        }
+    }
+
+    public class ScriptRunningTask extends Task.Backgroundable implements InterruptibleScriptTask {
         private ScriptProcessorCallback callback;
         private String scriptContent;
         private ExecutorService executor;
         private String scriptFilename;
+        private InterruptibleScriptTaskImpl scriptSafetyNet;
 
         public ScriptRunningTask(@NotNull String title, String scriptContent, String scriptFilename, ScriptProcessorCallback callback) {
             super(project, title, false);
@@ -303,23 +416,14 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
             this.setCancelText("Stop running scripts");
         }
 
-        public void cancel() {
-            executor.shutdownNow();
-        }
-
-        public boolean isRunning() {
-            return !executor.isTerminated();
-        }
-
         public void run(ProgressIndicator indicator) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    executor = Executors.newFixedThreadPool(1);
-                    executor.execute(new Runnable() {
+                    scriptSafetyNet = new InterruptibleScriptTaskImpl(callback, new Thread(new Runnable() {
+                        @Override
                         public void run() {
                             runGlobalScripts();
                             try {
-
                                 if (scriptContent != null) {
                                     logger.info("Evaluating script ...");
                                     // vsch: set the script file name for exceptions and __FILE__ setting
@@ -331,9 +435,23 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
                                 callback.failure(e);
                             }
                         }
-                    });
+                    }));
+
+                    // we execute it withing another thread so that we can kill it if it refuses to properly handle
+                    // an interrupt.
+                    scriptSafetyNet.start();
                 }
             });
+        }
+
+        @Override
+        public void cancel() {
+            scriptSafetyNet.cancel();
+        }
+
+        @Override
+        public boolean isRunning() {
+            return scriptSafetyNet.isRunning();
         }
     }
 }

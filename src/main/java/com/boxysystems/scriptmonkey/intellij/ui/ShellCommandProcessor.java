@@ -2,6 +2,8 @@ package com.boxysystems.scriptmonkey.intellij.ui;
 
 import com.intellij.openapi.project.Project;
 
+import java.util.concurrent.Future;
+
 /**
  * Created by IntelliJ IDEA.
  * User: siddique
@@ -10,10 +12,8 @@ import com.intellij.openapi.project.Project;
  * To change this template use File | Settings | File Templates.
  */
 interface ShellCommandProcessor {
-    public String executeCommand(String cmd);
-    public String executeCommand(String cmd, int lineOffset);
-    public String executeCommand(String cmd, int lineOffset, int firstLineColumnOffset);
-    public String getPrompt();
-    public boolean isCommandShell();
-    public Project getProject();
+    String executeCommand(String cmd, int lineOffset, int firstLineColumnOffset, ScriptTaskInterrupter taskStopSetter, ScriptProcessorPrinter printer);
+    String getPrompt();
+    boolean isCommandShell();
+    Project getProject();
 }

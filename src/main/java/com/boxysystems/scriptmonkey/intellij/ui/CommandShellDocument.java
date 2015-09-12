@@ -19,6 +19,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.UserDataHolderEx;
 import com.intellij.util.Processor;
+import com.intellij.util.Time;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
@@ -41,6 +43,7 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
     private boolean batchedReplace;
     private boolean batchHadOutput;
     private ArrayList<Boolean> batchHadOutputStack = new ArrayList<Boolean>(10);
+    private long lastOutputTime;
 
     public CommandShellDocument(Document delegate, ScriptShellPanel scriptShellPanel) {
         this.delegateDocumentEx = (DocumentEx) delegate;
@@ -52,6 +55,7 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
         this.batchedText = null;
         this.batchedReplace = true;
         this.batchHadOutput = false;
+        this.lastOutputTime = System.currentTimeMillis();
     }
 
     public void beginUpdate() {
@@ -59,6 +63,7 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
         //        editor.getDocument().setReadOnly(false);
         if (updating == 0) {
             batchedReplace = false;
+            lastOutputTime = System.currentTimeMillis();
         }
         else {
             // save old value
@@ -161,8 +166,14 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
 
         // TODO: can loosen the condition if batchedReplace then we can insert into the batchedText at the offset
         if (isUpdating() && offset >= getTextLength()) {
-            // can batch it
+            // can batch it but don't wait forever, see when the last update took place and flush the batch
             appendBatchedText(text);
+            if (lastOutputTime + 100 < System.currentTimeMillis()) {
+                // time to flush the batch
+                lastOutputTime = System.currentTimeMillis();
+                applyBatchedText(false);
+                batchedText = new StringBuilder();
+            }
         }
         else {
             runWriteAction(new Runnable() {

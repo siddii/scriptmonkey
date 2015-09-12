@@ -43,11 +43,19 @@
             homepage</a>
         ]]>
   </description>
-    <version>1.2.4</version>
+    <version>1.2.6</version>
     <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
     <idea-version since-build="141.1550"/>
 
     <change-notes><![CDATA[
+      <ul><u>Version 1.2.6 changes:</u>
+        <li>Fix scripts were not stoppable via stop action. Now an attempt is made to interrupt a thread and if it does not respond within 2 seconds, then the thread is stopped. Works in all but one case which is unstoppable.</li>
+        <li>Add stop script action button to JS Shell pane so that accidental infinite loops could be terminated instead of hanging the shell.</li>
+        <li>Change JS Shell pane now flushes accumulated text from a running script every 100ms instead of waiting for it to terminate.</li>
+      </ul>
+      <ul><u>Version 1.2.5 changes:</u>
+        <li>Fix editor was not released error, really fixed it this time.</li>
+      </ul>
       <ul><u>Version 1.2.4 changes:</u>
         <li>Fix editor was not released error.</li>
       </ul>

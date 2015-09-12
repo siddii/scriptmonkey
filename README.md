@@ -40,6 +40,44 @@ To get this version you can download the `ScriptMonkey_1.2.0.zip` from the root 
     Otherwise, return will just insert a new line (as per your keymap) in the text.
         
     You can edit any text in the pane, but to execute it you will need to copy it to the bottom of the file, after the last prompt. If the pasted text ends in \n then it will be immediately executed, otherwise it will execute when you hit return at the end of text.
+    
+#### Version 1.2.5
+
+-   Fixed Stop Script Action did not work on scripts that were in a tight loop without sleep(). This was done by setting the thread interrupt and waiting a maximum of 2 seconds for it to terminate. Failing that the thread is rudely stopped. So now `while(true) {}` no longer hangs forever refusing to stop.  
+
+    Polite, long running scripts should periodically check `java.lang.Thread.interrupted()` and if returns true then they should terminate their processing.
+
+    There is a caveat with trying to stop a runaway script. This code will not stop because it catches `java.lang.ThreadDeath` and continues running:
+
+    ```javascript
+    while(true) { 
+        try { 
+            java.lang.Thread.sleep(100); 
+        } catch (e) { 
+           var i = "" + e; 
+        } 
+    }
+    ```    
+
+    For tricky code like that we have two consecutive thread stops that make even this code give up the ghost by having the second stop catch it in its exception handler. However, this code is unstoppable, no matter how many stops and cancels are issued:
+    
+    ```javascript
+    while(true) { 
+        try { 
+            java.lang.Thread.sleep(100); 
+        } catch (e) { 
+        } 
+    }
+    ```    
+-   Add Stop Script Action button to JS Shell so that runaway shell scripts could be interrupted.     
+-   JS Shell pane now flushes accumulated text from a running script every 100ms instead of waiting for it to terminate before outputing it.
+
+#### Version 1.2.5
+
+-   Fix EditorImpl was not released exception on closing of the IDEA when debugging other plugins with ScriptMonkey plugin installed.
+
+#### Version 1.2.2
+
 -   Exception in scripts now properly reflect the source file name
 -   Exceptions in JS Shell scripts reflect the actual line and column of the source in the shell pane.
 -   Fixed with() was hiding all engine scope bindings, now using global scope instead. The way engines are created global scopes are not shared anyway.

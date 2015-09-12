@@ -3,6 +3,7 @@ package com.boxysystems.scriptmonkey.intellij.action;
 import com.boxysystems.scriptmonkey.intellij.icons.Icons;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptCommandProcessor;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptShellPanelAction;
+import com.boxysystems.scriptmonkey.intellij.ui.ScriptTaskInterrupter;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 /**
@@ -11,14 +12,12 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  * Date: Oct 6, 2008
  * Time: 3:56:07 PM
  */
-public class StopScriptAction extends ScriptShellPanelAction {
-    private ScriptCommandProcessor.ScriptRunningTask task;
+public class StopScriptAction extends ScriptShellPanelAction implements ScriptTaskInterrupter {
+    private ScriptCommandProcessor.InterruptibleScriptTask task;
 
     public StopScriptAction() {
-        super("Stop",
-                "Stop the running script",
-                Icons.SUSPEND_ICON);
-        setEnabled(true);
+        super("Stop", "Stop the running script", Icons.SUSPEND_ICON);
+        setEnabled(false);
     }
 
     public void actionPerformed(AnActionEvent anActionEvent) {
@@ -27,7 +26,8 @@ public class StopScriptAction extends ScriptShellPanelAction {
         }
     }
 
-    public void setTask(ScriptCommandProcessor.ScriptRunningTask task) {
+    public void setTask(ScriptCommandProcessor.InterruptibleScriptTask task) {
         this.task = task;
+        setEnabled(true);
     }
 }

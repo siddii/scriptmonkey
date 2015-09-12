@@ -6,7 +6,7 @@ package com.boxysystems.scriptmonkey.intellij.ui;
  * Date: Oct 20, 2008
  * Time: 4:30:42 PM
  */
-public interface ScriptProcessorCallback {
-  public void success();
-  public void failure(Throwable throwable);
+public interface ScriptProcessorCallback extends ScriptProcessorPrinter {
+    void success();
+    void failure(Throwable throwable);
 }

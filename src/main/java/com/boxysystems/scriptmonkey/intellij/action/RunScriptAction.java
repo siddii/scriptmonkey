@@ -90,8 +90,7 @@ public class RunScriptAction extends ScriptShellPanelAction {
                 commandProcessor.addGlobalVariable("window", panel);
                 panel.clear();
                 panel.println("Running script '" + scriptFile.getAbsolutePath() + "' ...");
-                ScriptCommandProcessor.ScriptRunningTask task = commandProcessor.processScript(scriptContent, scriptFile.getAbsolutePath(), new RunScriptActionCallback(panel));
-                panel.getStopScriptAction().setTask(task);
+                ScriptCommandProcessor.ScriptRunningTask task = commandProcessor.processScript(scriptContent, scriptFile.getAbsolutePath(), new RunScriptActionCallback(panel), panel.getStopScriptAction());
 
                 toolWindow.activate();
                 toolWindow.getContentManager().setSelectedContent(content);
@@ -119,7 +118,7 @@ public class RunScriptAction extends ScriptShellPanelAction {
         public void success() {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    panel.println("Successfully processed !");
+                    panel.println("Successfully processed!");
                     finishUp();
                 }
             });
@@ -133,6 +132,10 @@ public class RunScriptAction extends ScriptShellPanelAction {
                     finishUp();
                 }
             });
+        }
+
+        public void println(String msg) {
+            panel.println(msg);
         }
 
         public void finishUp() {
