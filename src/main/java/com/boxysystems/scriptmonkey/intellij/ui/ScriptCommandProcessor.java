@@ -3,7 +3,6 @@ package com.boxysystems.scriptmonkey.intellij.ui;
 import com.boxysystems.scriptmonkey.intellij.Constants;
 import com.boxysystems.scriptmonkey.intellij.ScriptMonkeyApplicationComponent;
 import com.boxysystems.scriptmonkey.intellij.ScriptMonkeyPlugin;
-import com.boxysystems.scriptmonkey.intellij.ScriptMonkeyPluginClassLoader;
 import com.boxysystems.scriptmonkey.intellij.action.JSFileFilter;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
@@ -53,7 +52,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
 
     private Project project;
     private ScriptMonkeyPlugin plugin;
-    private ScriptMonkeyPluginClassLoader pluginClassLoader;
 
     public ScriptCommandProcessor(Application application) {
         this.application = application;
@@ -64,7 +62,6 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         this.application = application;
         this.project = project;
         this.plugin = scriptMonkeyPlugin;
-        this.pluginClassLoader = new ScriptMonkeyPluginClassLoader(plugin);
         createScriptEngine(scriptMonkeyPlugin);
     }
 
@@ -207,12 +204,12 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
     }
 
     private void createScriptEngine(ScriptMonkeyPlugin scriptMonkeyPlugin) {
-        if (scriptMonkeyPlugin != null && pluginClassLoader != null) {
-            UrlClassLoader augmentedClassLoader = pluginClassLoader.getAugmentedClassLoader();
-            if (augmentedClassLoader != null) {
-                Thread.currentThread().setContextClassLoader(augmentedClassLoader);
-            }
-        }
+        //if (scriptMonkeyPlugin != null && pluginClassLoader != null) {
+        //    UrlClassLoader augmentedClassLoader = pluginClassLoader.getAugmentedClassLoader();
+        //    if (augmentedClassLoader != null) {
+        //        Thread.currentThread().setContextClassLoader(augmentedClassLoader);
+        //    }
+        //}
         engine = getScriptingEngine();
         String extension = engine.getFactory().getExtensions().get(0);
         prompt = extension + ">";
@@ -379,9 +376,10 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
                         // which does not require the cooperation of the running thread. Programming is not always a
                         // gentleman's tea party and you need the ability to boot misbehaving code.
                         if (printer != null) printer.println("Script thread is not responding. Stopping thread...");
-                        scriptSafetyNet.interrupt();
+
                         scriptSafetyNet.stop(); // that'll learn ya
-                        scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
+                        Thread.yield();
+                        if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
 
                         // vsch: just one stop is not enough. If javascript catches() the exception (with a twist) then it also
                         // catches java.lang.ThreadDeath and continues running here is the JavaScript that manages to survive

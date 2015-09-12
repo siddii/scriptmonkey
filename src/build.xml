@@ -17,7 +17,7 @@
 
   <target name="createSourceZip">
     <echo>Creating zip file ${sourceZip}...</echo>
-    <zip basedir="." file="${sourceZip}">
+    <zip basedir="." file="../${sourceZip}">
       <exclude name="**/*.class"/>
     </zip>
   </target>

@@ -43,11 +43,16 @@
             homepage</a>
         ]]>
   </description>
-    <version>1.2.6</version>
+    <version>1.2.7</version>
     <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
     <idea-version since-build="141.1550"/>
 
     <change-notes><![CDATA[
+      <ul><u>Version 1.2.7 changes:</u>
+        <li>Fix EditorImpl not released, again. Finally figured out that it was the Script panels that were causing this.</li>
+        <li>Change code to modify classloader to find nashorn.jar to the same one used in vsch/idea-multimarkdown plugin.</li>
+        <li>Change ant build of source zip to put the zip under project root instead of under src so it does not complain about including itself.</li>
+      </ul>
       <ul><u>Version 1.2.6 changes:</u>
         <li>Fix scripts were not stoppable via stop action. Now an attempt is made to interrupt a thread and if it does not respond within 2 seconds, then the thread is stopped. Works in all but one case which is unstoppable.</li>
         <li>Add stop script action button to JS Shell pane so that accidental infinite loops could be terminated instead of hanging the shell.</li>

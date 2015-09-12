@@ -29,6 +29,12 @@ public class ScriptMonkeyPlugin implements ProjectComponent {
 
     public ScriptMonkeyPlugin(Project project) {
         this.project = project;
+
+        // vsch: this may be a problem if someone has multiple projects open with the same classes in different libraries
+        // vsch: TODO: implement a custom class loader that will take the pluginclassloader as the parent and resolve library paths
+        // before resorting to the parent
+
+        ApplicationManager.getApplication().getComponent(ScriptMonkeyApplicationComponent.class).augmentClassLoader(project);
     }
 
     public void projectOpened() {
@@ -63,10 +69,6 @@ public class ScriptMonkeyPlugin implements ProjectComponent {
     public void projectClosed() {
         if (toolWindow != null) {
             toolWindow.unregisterToolWindow();
-        }
-
-        if (commandShellPanel != null) {
-            commandShellPanel.disposeComponent();
         }
 
         toolWindow = null;

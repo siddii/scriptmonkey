@@ -1,6 +1,7 @@
 package com.boxysystems.scriptmonkey.intellij;
 
 import com.boxysystems.scriptmonkey.intellij.ui.PluginScript;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NonNls;
@@ -19,6 +20,12 @@ public class ScriptMonkeyProjectComponent implements ProjectComponent {
 
     public ScriptMonkeyProjectComponent(Project project) {
         this.project = project;
+
+        // vsch: this may be a problem if someone has multiple projects open with the same classes in different libraries
+        // vsch: TODO: implement a custom class loader that will take the pluginclassloader as the parent and resolve library paths
+        // before resorting to the parent
+        ApplicationManager.getApplication().getComponent(ScriptMonkeyApplicationComponent.class).augmentClassLoader(project);
+
         pluginScriptRunner = new PluginScriptRunner(project, ScriptMonkeyPlugin.getInstance(project));
     }
 
