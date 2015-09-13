@@ -8,6 +8,7 @@ with (pkgs) {
     function intellijVersion() {
         echo("VersionName = " + intellij.applicationInfo.versionName + ", Build date = " + intellij.applicationInfo.buildDate.getTime() + ", Build No. = " + intellij.applicationInfo.buildNumber);
     }
+
     intellijVersion.docString = "Print intellij version details";
 
     function listPlugins() {
@@ -16,6 +17,7 @@ with (pkgs) {
             echo("Name = " + plugins[i].name + ", Vendor = " + plugins[i].vendor + ", Version = " + plugins[i].version);
         }
     }
+
     listPlugins.docString = "List intellij plugins";
 
     function createAction(plugin, actionID, text, callableObject) {
@@ -38,7 +40,7 @@ with (pkgs) {
     }
 
     function error(message, t) {
-        if (!t){
+        if (!t) {
             t = null;
         }
         logger.error(message, t);

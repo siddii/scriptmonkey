@@ -1,4 +1,4 @@
- /*
+/*
  * @(#)init.js	1.4 07/01/02
  *
  * Copyright 2007 Sun Microsystems, Inc. All rights reserved.
@@ -10,7 +10,7 @@
  */
 
 /**
- * Creates an object that delegates all method calls on 
+ * Creates an object that delegates all method calls on
  * it to the 'invoke' method on the given delegate object.<br>
  *
  * Example:
@@ -34,13 +34,13 @@ var File = Java.type("java.io.File");
 var FileInputStream = Java.type("java.io.FileInputStream");
 
 function JSInvoker(obj) {
-	return new JSAdapter({
-			__get__ : function(name) {
-				return function() {
-					return obj.invoke(name, arguments);
-				}
-			}
-		});
+    return new JSAdapter({
+        __get__: function (name) {
+            return function () {
+                return obj.invoke(name, arguments);
+            }
+        }
+    });
 }
 
 /**
@@ -49,24 +49,24 @@ function JSInvoker(obj) {
  * example, env.PATH will return PATH value configured.
  */
 var env = new JSAdapter({
-	__get__ : function (name) {
-		return java.lang.System.getenv(name);
-	},
-	__has__ : function (name) {
-		return java.lang.System.getenv().containsKey(name);
-	},
-	__getIds__ : function() {
-		return java.lang.System.getenv().keySet().toArray();
-	},
-	__delete__ : function(name) {
-		window.println("can't delete env item");
-	},
-	__put__ : function (name, value) {
-		window.println("can't change env item");
-	},			
-	toString: function() {
-		return java.lang.System.getenv().toString();
-	}		
+    __get__: function (name) {
+        return java.lang.System.getenv(name);
+    },
+    __has__: function (name) {
+        return java.lang.System.getenv().containsKey(name);
+    },
+    __getIds__: function () {
+        return java.lang.System.getenv().keySet().toArray();
+    },
+    __delete__: function (name) {
+        window.println("can't delete env item");
+    },
+    __put__: function (name, value) {
+        window.println("can't change env item");
+    },
+    toString: function () {
+        return java.lang.System.getenv().toString();
+    }
 });
 
 /**
@@ -82,36 +82,36 @@ var env = new JSAdapter({
  *     delete y['java.class.path']; // remove java.class.path System property
  * </code>
  * </pre>
- * 
+ *
  * @param map java.util.Map instance that will be wrapped
  * @constructor
  */
-function jmap(map) {	
-	return new JSAdapter({
-		__get__ : function(name) {
-			if (map.containsKey(name)) {
-				return map.get(name);
-			} else {
-				return undefined;
-			}
-   		  },
-		__has__ :  function(name) {
-				return map.containsKey(name);
-			},
+function jmap(map) {
+    return new JSAdapter({
+        __get__: function (name) {
+            if (map.containsKey(name)) {
+                return map.get(name);
+            } else {
+                return undefined;
+            }
+        },
+        __has__: function (name) {
+            return map.containsKey(name);
+        },
 
-		__delete__ : function (name) {
-				return map.remove(name);
-			},
-		__put__ : function(name, value) {
-				map.put(name, value);
-			},
-		__getIds__ : function() {
-				return map.keySet().toArray();		
-			},
-		toString: function() {
-				return map.toString();
-		}
-	});
+        __delete__: function (name) {
+            return map.remove(name);
+        },
+        __put__: function (name, value) {
+            map.put(name, value);
+        },
+        __getIds__: function () {
+            return map.keySet().toArray();
+        },
+        toString: function () {
+            return map.toString();
+        }
+    });
 }
 
 /**
@@ -137,44 +137,47 @@ function jmap(map) {
  * @constructor
  */
 function jlist(list) {
-	function isValid(index) {
-		return typeof(index) == 'number' &&
-			index > -1 && index < list.size();
-	}
-	return new JSAdapter({
-		__get__ :  function(name) {
+    function isValid(index) {
+        return typeof(index) == 'number' &&
+            index > -1 && index < list.size();
+    }
+
+    return new JSAdapter({
+        __get__: function (name) {
 			if (isValid(name)) {
 				return list.get(name);
-			} else if (name == 'length') {
-				return list.size();
 			} else {
-				return undefined;
-			}
-		},
-		__has__ : function (name) {
-			return isValid(name) || name == 'length';
-		},
-		__delete__ : function(name) {				
-			if (isValid(name)) {
-				list.remove(name);	
-			}
-		},
-		__put__ : function(name, value) {
-			if (isValid(name)) {
-				list.set(name, value);
-			}
-		},
-		__getIds__: function() {
-			var res = new Array(list.size());
-			for (var i = 0; i < res.length; i++) {
-				res[i] = i;
-			}
-			return res;
-		},
-		toString: function() {
-			return list.toString();
-		}				
-	});
+				if (name == 'length') {
+					return list.size();
+				} else {
+                    return undefined;
+                }
+            }
+        },
+        __has__: function (name) {
+            return isValid(name) || name == 'length';
+        },
+        __delete__: function (name) {
+            if (isValid(name)) {
+                list.remove(name);
+            }
+        },
+        __put__: function (name, value) {
+            if (isValid(name)) {
+                list.set(name, value);
+            }
+        },
+        __getIds__: function () {
+            var res = new Array(list.size());
+            for (var i = 0; i < res.length; i++) {
+                res[i] = i;
+            }
+            return res;
+        },
+        toString: function () {
+            return list.toString();
+        }
+    });
 }
 
 /**
@@ -196,70 +199,78 @@ var inp = java.lang.System["in"];
 
 /**
  * Generic any object to input stream mapper
- * @param str input file name, URL or InputStream 
+ * @param str input file name, URL or InputStream
  * @return InputStream object
  * @private
  */
 function inStream(str) {
-	if (typeof(str) == "string") {
-		// '-' means standard input
-		if (str == '-') {
-			return java.lang.System["in"];
-		}
-		// try file first
-		var file = null;
-		try {
-			file = pathToFile(str);
-		} catch (e) {
-		}		
-		if (file && file.exists()) {
-			return new java.io.FileInputStream(file);
-		} else {
-			try {
-				// treat the string as URL
-				return new URL(str).openStream();
-			} catch (e) {
-				throw 'file or URL ' + str + ' not found';
-			}
-		}
-	} else {
+    if (typeof(str) == "string") {
+        // '-' means standard input
+        if (str == '-') {
+            return java.lang.System["in"];
+        }
+        // try file first
+        var file = null;
+        try {
+            file = pathToFile(str);
+        }
+        catch (e) {
+        }
+        if (file && file.exists()) {
+            return new java.io.FileInputStream(file);
+        } else {
+            try {
+                // treat the string as URL
+                return new URL(str).openStream();
+            }
+            catch (e) {
+                throw 'file or URL ' + str + ' not found';
+            }
+        }
+    } else {
 		if (str instanceof InputStream) {
 			return str;
-		} else if (str instanceof URL) {
-			return str.openStream();
-		} else if (str instanceof File) {
-			return new FileInputStream(str);
-		}
-	}
-	// everything failed, just give input stream
-	return java.lang.System["in"];
+		} else {
+			if (str instanceof URL) {
+				return str.openStream();
+			} else {
+				if (str instanceof File) {
+					return new FileInputStream(str);
+                }
+            }
+        }
+    }
+    // everything failed, just give input stream
+    return java.lang.System["in"];
 }
 
 /**
  * Generic any object to output stream mapper
- * 
+ *
  * @param out output file name or stream
  * @return OutputStream object
  * @private
  */
 function outStream(out) {
-	if (typeof(out) == "string") {
-		if (out == '>') {
-			return java.lang.System.out;
-		} else {
-			// treat it as file			
-			return new FileOutputStream(pathToFile(out));
-		}
-	} else {
+    if (typeof(out) == "string") {
+        if (out == '>') {
+            return java.lang.System.out;
+        } else {
+            // treat it as file
+            return new FileOutputStream(pathToFile(out));
+        }
+    } else {
 		if (out instanceof OutputStream) {
 			return out;
-		} else if (out instanceof File) {
-			return new FileOutputStream(out);
-		}
-	}
+		} else {
+			if (out instanceof File) {
+				return new FileOutputStream(out);
+            }
+        }
+    }
 
-	// everything failed, just return System.out
-	return java.lang.System.out;
+    // everything failed, just return System.out
+    return java.lang.System.out;
 }
 
 /**
@@ -267,17 +278,18 @@ function outStream(out) {
  * @private
  */
 function streamClose(stream) {
-	if (stream) {
-		if (stream != java.lang.System["in"] &&
-			stream != java.lang.System.out &&
-			stream != java.lang.System.err) {
-			try {
-				stream.close();
-			} catch (e) {
-				window.println(e);
-			}
-		}
-	}
+    if (stream) {
+        if (stream != java.lang.System["in"] &&
+            stream != java.lang.System.out &&
+            stream != java.lang.System.err) {
+            try {
+                stream.close();
+            }
+            catch (e) {
+                window.println(e);
+            }
+        }
+    }
 }
 
 /**
@@ -309,31 +321,34 @@ function streamClose(stream) {
 //load.docString = "Loads and evaluates JavaScript code from a stream or file or URL";
 
 //Copied from jconsole.js
- /**
-  * load and evaluate script file. If no script file is
-  * specified, file dialog is shown to choose the script.
-  *
-  * @param file script file name [optional]
-  * @return value returned from evaluating script
-  */
- function load(file) {
-     if (file == undefined || file == null) {
-         // file not specified, show file dialog to choose
-         file = fileDialog();
-     }
-     if (file == null) return;
+/**
+ * load and evaluate script file. If no script file is
+ * specified, file dialog is shown to choose the script.
+ *
+ * @param file script file name [optional]
+ * @return value returned from evaluating script
+ */
+function load(file) {
+    if (file == undefined || file == null) {
+        // file not specified, show file dialog to choose
+        file = fileDialog();
+    }
+	if (file == null) {
+		return;
+    }
 
-     var reader = new java.io.FileReader(file);
-     var oldFilename = engine.get(engine.FILENAME);
-     engine.put(engine.FILENAME, file);
-     try {
-         engine.eval(reader);
-     } finally {
-         engine.put(engine.FILENAME, oldFilename);
-     }
-     reader.close();
- }
- load.docString = "loads a script file and evaluates it. If no script file is specified, file dialog is shown to choose the script";
+    var reader = new java.io.FileReader(file);
+    var oldFilename = engine.get(engine.FILENAME);
+    engine.put(engine.FILENAME, file);
+    try {
+        engine.eval(reader);
+    }
+    finally {
+        engine.put(engine.FILENAME, oldFilename);
+    }
+    reader.close();
+}
+load.docString = "loads a script file and evaluates it. If no script file is specified, file dialog is shown to choose the script";
 
 // file system utilities
 
@@ -343,7 +358,7 @@ function streamClose(stream) {
  * @private
  */
 function javaByteArray(len) {
-	return java.lang.reflect.Array.newInstance(java.lang.Byte.TYPE, len);
+    return java.lang.reflect.Array.newInstance(java.lang.Byte.TYPE, len);
 }
 
 var curDir = new File('.');
@@ -352,7 +367,7 @@ var curDir = new File('.');
  * Print present working directory
  */
 function pwd() {
-	window.println(curDir.getAbsolutePath());
+    window.println(curDir.getAbsolutePath());
 }
 pwd.docString = "Print present working directory";
 
@@ -361,17 +376,17 @@ pwd.docString = "Print present working directory";
  * @param target directory to change to. optional, defaults to user's HOME
  */
 function cd(target) {
-	if (target == undefined) {
-		target = sysProps["user.home"];
-	}
-	if (!(target instanceof File)) {
-		target = pathToFile(target);
-	}
-	if (target.exists() && target.isDirectory()) {
-		curDir = target;
-	} else {
-		window.println(target + " is not a directory");
-	}
+    if (target == undefined) {
+        target = sysProps["user.home"];
+    }
+    if (!(target instanceof File)) {
+        target = pathToFile(target);
+    }
+    if (target.exists() && target.isDirectory()) {
+        curDir = target;
+    } else {
+        window.println(target + " is not a directory");
+    }
 }
 cd.docString = "Changes present working directory to given directory";
 
@@ -382,15 +397,15 @@ cd.docString = "Changes present working directory to given directory";
  * @private
  */
 function pathToFile(pathname) {
-	var tmp = pathname;
-	if (!(tmp instanceof File)) {
-		tmp = new File(tmp);
-	}
-	if (!tmp.isAbsolute()) {
-		return new File(curDir, pathname);
-	} else {
-		return tmp;
-	}
+    var tmp = pathname;
+    if (!(tmp instanceof File)) {
+        tmp = new File(tmp);
+    }
+    if (!tmp.isAbsolute()) {
+        return new File(curDir, pathname);
+    } else {
+        return tmp;
+    }
 }
 
 /**
@@ -400,22 +415,23 @@ function pathToFile(pathname) {
  * @param to output stream or file
  */
 function cp(from, to) {
-	if (from == to) {
-		window.println("file " + from + " cannot be copied onto itself!");
-		return;
-	}
-	var inp = inStream(from);
-	var out = outStream(to);
-	var binp = new BufferedInputStream(inp);
-	var bout = new BufferedOutputStream(out);
-	var buff = javaByteArray(1024);
-	var len;
-	while ((len = binp.read(buff)) > 0 )
+    if (from == to) {
+        window.println("file " + from + " cannot be copied onto itself!");
+        return;
+    }
+    var inp = inStream(from);
+    var out = outStream(to);
+    var binp = new BufferedInputStream(inp);
+    var bout = new BufferedOutputStream(out);
+    var buff = javaByteArray(1024);
+    var len;
+	while ((len = binp.read(buff)) > 0) {
 		bout.write(buff, 0, len);
+    }
 
-	bout.flush();
-	streamClose(inp);
-	streamClose(out);	
+    bout.flush();
+    streamClose(inp);
+    streamClose(out);
 }
 
 cp.docString = "Copies a file from one location to another";
@@ -426,41 +442,40 @@ cp.docString = "Copies a file from one location to another";
  * <pre>
  * <code>
  *    cat('test.txt'); // show test.txt file contents
- *    cat('http://java.net'); // show the contents from the URL http://java.net 
+ *    cat('http://java.net'); // show the contents from the URL http://java.net
  * </code>
  * </pre>
  * @param obj input to show
  * @param pattern optional. show only the lines matching the pattern
  */
 function cat(obj, pattern) {
-	if (obj instanceof File && obj.isDirectory()) {
-		ls(obj);
-		return;
-	}
-	
-	var inp = null;
-	if (!(obj instanceof Reader)) {
-		inp = inStream(obj);
-		obj = new BufferedReader(new InputStreamReader(inp));
-	}
-	var line;
-	if (pattern) {
-		var count = 1;
-		while ((line=obj.readLine()) != null) {
-			if (line.match(pattern)) {
-				window.println(count + "\t: " + line);
-			}
-			count++;
-		}
-	} else {
-		while ((line=obj.readLine()) != null) {
-			window.println(line);
-		}
-	}
+    if (obj instanceof File && obj.isDirectory()) {
+        ls(obj);
+        return;
+    }
+
+    var inp = null;
+    if (!(obj instanceof Reader)) {
+        inp = inStream(obj);
+        obj = new BufferedReader(new InputStreamReader(inp));
+    }
+    var line;
+    if (pattern) {
+        var count = 1;
+        while ((line = obj.readLine()) != null) {
+            if (line.match(pattern)) {
+                window.println(count + "\t: " + line);
+            }
+            count++;
+        }
+    } else {
+        while ((line = obj.readLine()) != null) {
+            window.println(line);
+        }
+    }
 }
 
 cat.docString = "Shows the content of a file";
-
 
 /**
  * Returns directory part of a filename
@@ -469,15 +484,15 @@ cat.docString = "Shows the content of a file";
  * @return directory part of the given file name
  */
 function dirname(pathname) {
-	var dirName = ".";
-	// Normalize '/' to local file separator before work.
-	var i = pathname.replace('/', File.separatorChar ).lastIndexOf( 
-		File.separator );
-	if ( i != -1 )
+    var dirName = ".";
+    // Normalize '/' to local file separator before work.
+    var i = pathname.replace('/', File.separatorChar).lastIndexOf(
+        File.separator);
+	if (i != -1) {
 		dirName = pathname.substring(0, i);
-	return dirName;
+    }
+    return dirName;
 }
-
 
 /**
  * Creates a new dir of given name
@@ -485,35 +500,35 @@ function dirname(pathname) {
  * @param dir name of the new directory
  */
 function mkdir(dir) {
-	var dir = pathToFile(dir);
-	window.println(dir.mkdir()? "created" : "can not create dir");
+    var dir = pathToFile(dir);
+    window.println(dir.mkdir() ? "created" : "can not create dir");
 }
 mkdir.docString = "Creates a new dir of given name";
 
 /**
- * Creates the directory named by given pathname, including 
+ * Creates the directory named by given pathname, including
  * any necessary but nonexistent parent directories.
  *
  * @param dir input path name
  */
 function mkdirs(dir) {
-	var dir = pathToFile(dir);
-	window.println(dir.mkdirs()? "created" : "can not create dirs");
+    var dir = pathToFile(dir);
+    window.println(dir.mkdirs() ? "created" : "can not create dirs");
 }
-	
+
 /**
- * Removes a given file 
+ * Removes a given file
  *
- * @param pathname name of the file 
+ * @param pathname name of the file
  */
 function rm(pathname) {
-    	file = pathToFile(pathname);
-	if (!file.exists()) {
-		window.println("file not found: " + pathname);
-		return false;
-	}
-	// note that delete is a keyword in JavaScript!
-	window.println(file["delete"]()? "deleted" : "can not delete");
+    file = pathToFile(pathname);
+    if (!file.exists()) {
+        window.println("file not found: " + pathname);
+        return false;
+    }
+    // note that delete is a keyword in JavaScript!
+    window.println(file["delete"]() ? "deleted" : "can not delete");
 }
 rm.docString = "Removes a given file";
 
@@ -523,14 +538,14 @@ rm.docString = "Removes a given file";
  * @param pathname name of the directory
  */
 function rmdir(pathname) {
-	rm(pathname);
+    rm(pathname);
 }
 
 /**
  * Synonym for 'rm'
  */
 function del(pathname) {
-	rm(pathname);
+    rm(pathname);
 }
 
 /**
@@ -540,62 +555,63 @@ function del(pathname) {
  * @param to new name for the file
  */
 function mv(from, to) {
-	window.println(pathToFile(from).renameTo(pathToFile(to))?
-		"moved" : "can not move");
+    window.println(pathToFile(from).renameTo(pathToFile(to)) ?
+        "moved" : "can not move");
 }
 
 /**
  * Synonym for 'mv'.
  */
 function ren(from, to) {
-	mv(from, to);
+    mv(from, to);
 }
 
-var months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
+var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 /**
  * Helper function called by ls
  * @private
- */	
+ */
 function printFile(f) {
-	var sb = new java.lang.StringBuffer();
-	sb.append(f.isDirectory()? "d" : "-");
-	sb.append(f.canRead() ? "r": "-" );
-	sb.append(f.canWrite() ? "w": "-" );		
-	sb.append(" ");
+    var sb = new java.lang.StringBuffer();
+    sb.append(f.isDirectory() ? "d" : "-");
+    sb.append(f.canRead() ? "r" : "-");
+    sb.append(f.canWrite() ? "w" : "-");
+    sb.append(" ");
 
-	var d = new java.util.Date(f.lastModified());
-	var c = new java.util.GregorianCalendar();
-	c.setTime(d);
-	var day	= c.get(java.util.Calendar.DAY_OF_MONTH);
-	sb.append(months[c.get(java.util.Calendar.MONTH)]
-		 + " " + day );
-	if (day < 10) {
-		sb.append(" ");
-	}
+    var d = new java.util.Date(f.lastModified());
+    var c = new java.util.GregorianCalendar();
+    c.setTime(d);
+    var day = c.get(java.util.Calendar.DAY_OF_MONTH);
+    sb.append(months[c.get(java.util.Calendar.MONTH)]
+        + " " + day);
+    if (day < 10) {
+        sb.append(" ");
+    }
 
-	// to get fixed length 'length' field
-	var fieldlen = 8;
-	var len = new java.lang.StringBuffer();
-	for(var j=0; j<fieldlen; j++)
+    // to get fixed length 'length' field
+    var fieldlen = 8;
+    var len = new java.lang.StringBuffer();
+	for (var j = 0; j < fieldlen; j++) {
 		len.append(" ");
-	len.insert(0, java.lang.Long.toString(f.length()));
-	len.setLength(fieldlen);
-	// move the spaces to the front
-	var si = len.toString().indexOf(" ");
-	if ( si != -1 ) {
-		var pad = len.toString().substring(si);
-		len.setLength(si);
-		len.insert(0, pad);
-	}
-	sb.append(len.toString());
-	sb.append(" ");
-	sb.append(f.getName());
-	if (f.isDirectory()) {
-		sb.append('/');
-	}
-	window.println(sb.toString());
+    }
+    len.insert(0, java.lang.Long.toString(f.length()));
+    len.setLength(fieldlen);
+    // move the spaces to the front
+    var si = len.toString().indexOf(" ");
+    if (si != -1) {
+        var pad = len.toString().substring(si);
+        len.setLength(si);
+        len.insert(0, pad);
+    }
+    sb.append(len.toString());
+    sb.append(" ");
+    sb.append(f.getName());
+    if (f.isDirectory()) {
+        sb.append('/');
+    }
+    window.println(sb.toString());
 }
 
 /**
@@ -605,25 +621,25 @@ function printFile(f) {
  * @param filter pattern to filter the files listed. optional, default is '.'.
  */
 function ls(dir, filter) {
-	if (dir) {
-		dir = pathToFile(dir);		
-	} else {
-		dir = curDir;
-	}
-	if (dir.isDirectory()) {
-		var files = dir.listFiles();
-		for (var i in files) {
-			var f = files[i];
-			if (filter) {			
-				if(!f.getName().match(filter)) {
-					continue;
-				}
-			}
-			printFile(f);
-		}
-	} else {
-		printFile(dir);
-	}
+    if (dir) {
+        dir = pathToFile(dir);
+    } else {
+        dir = curDir;
+    }
+    if (dir.isDirectory()) {
+        var files = dir.listFiles();
+        for (var i in files) {
+            var f = files[i];
+            if (filter) {
+                if (!f.getName().match(filter)) {
+                    continue;
+                }
+            }
+            printFile(f);
+        }
+    } else {
+        printFile(dir);
+    }
 }
 ls.docString = "Lists the files in a directory";
 
@@ -631,7 +647,7 @@ ls.docString = "Lists the files in a directory";
  * Synonym for 'ls'.
  */
 function dir(d, filter) {
-	ls(d, filter);
+    ls(d, filter);
 }
 
 /**
@@ -641,24 +657,26 @@ function dir(d, filter) {
  * @param files one or more files
  */
 function grep(pattern, files /*, one or more files */) {
-	if (arguments.length < 2) return;
-	for (var i = 1; i < arguments.length; i++) {
-		window.println(arguments[i] + ":");
-		cat(arguments[i], pattern);
-	}
+	if (arguments.length < 2) {
+		return;
+    }
+    for (var i = 1; i < arguments.length; i++) {
+        window.println(arguments[i] + ":");
+        cat(arguments[i], pattern);
+    }
 }
 
 /**
  * Find in files. Calls arbitrary callback function
  * for each matching file.<br>
  *
- * Examples: 
+ * Examples:
  * <pre>
  * <code>
- *    find('.') 
- *    find('.', '.*\.class', rm);  // remove all .class files 
- *    find('.', '.*\.java');       // print fullpath of each .java file 
- *    find('.', '.*\.java', cat);  // print all .java files 
+ *    find('.')
+ *    find('.', '.*\.class', rm);  // remove all .class files
+ *    find('.', '.*\.java');       // print fullpath of each .java file
+ *    find('.', '.*\.java', cat);  // print all .java files
  * </code>
  * </pre>
  *
@@ -667,23 +685,25 @@ function grep(pattern, files /*, one or more files */) {
  * @param callback function to call for matching files
  */
 function find(dir, pattern, callback) {
-	dir = pathToFile(dir);
-	if (!callback) callback = window.println;
-	var files = dir.listFiles();
-	for (var f in files) {
-		var file = files[f];
-		if (file.isDirectory()) {
-			find(file, pattern, callback);
-		} else {
-			if (pattern) {
-				if (file.getName().match(pattern)) {
-					callback(file);
-				}
-			} else {
-				callback(file);
-			}
-		}
-	}	
+    dir = pathToFile(dir);
+	if (!callback) {
+		callback = window.println;
+    }
+    var files = dir.listFiles();
+    for (var f in files) {
+        var file = files[f];
+        if (file.isDirectory()) {
+            find(file, pattern, callback);
+        } else {
+            if (pattern) {
+                if (file.getName().match(pattern)) {
+                    callback(file);
+                }
+            } else {
+                callback(file);
+            }
+        }
+    }
 }
 
 // process utilities
@@ -694,17 +714,16 @@ function find(dir, pattern, callback) {
  * @param cmd command to execute in child process
  */
 function exec(cmd) {
-	var process = java.lang.Runtime.getRuntime().exec(cmd);
-	var inp = new DataInputStream(process.getInputStream());
-	var line = null;
-	while ((line = inp.readLine()) != null) {
-		window.println(line);
-	}
-	process.waitFor();
-	$exit = process.exitValue();
+    var process = java.lang.Runtime.getRuntime().exec(cmd);
+    var inp = new DataInputStream(process.getInputStream());
+    var line = null;
+    while ((line = inp.readLine()) != null) {
+        window.println(line);
+    }
+    process.waitFor();
+    $exit = process.exitValue();
 }
 exec.docString = "Executes a given command";
-
 
 /**
  * Exit the shell program.
@@ -729,7 +748,7 @@ exec.docString = "Executes a given command";
 
 // XML utilities
 
-/** 
+/**
  * Converts input to DOM Document object
  *
  * @param inp file or reader. optional, without this param,
@@ -737,17 +756,17 @@ exec.docString = "Executes a given command";
  * @return returns a DOM Document object
  */
 function XMLDocument(inp) {
-	var factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
-	var builder = factory.newDocumentBuilder();
-	if (inp) {
-		if (typeof(inp) == "string") {
-			return builder.parse(pathToFile(inp));
-		} else {
-			return builder.parse(inp);
-		}
-	} else {
-		return builder.newDocument();
-	}
+    var factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+    var builder = factory.newDocumentBuilder();
+    if (inp) {
+        if (typeof(inp) == "string") {
+            return builder.parse(pathToFile(inp));
+        } else {
+            return builder.parse(inp);
+        }
+    } else {
+        return builder.newDocument();
+    }
 }
 
 /**
@@ -759,12 +778,14 @@ function XMLDocument(inp) {
 function XMLSource(inp) {
 	if (inp instanceof javax.xml.transform.Source) {
 		return inp;
-	} else if (inp instanceof Packages.org.w3c.dom.Document) {
-		return new javax.xml.transform.dom.DOMSource(inp);
 	} else {
-		inp = new BufferedInputStream(inStream(inp));
-		return new javax.xml.transform.stream.StreamSource(inp);
-	}
+		if (inp instanceof Packages.org.w3c.dom.Document) {
+			return new javax.xml.transform.dom.DOMSource(inp);
+		} else {
+			inp = new BufferedInputStream(inStream(inp));
+			return new javax.xml.transform.stream.StreamSource(inp);
+        }
+    }
 }
 
 /**
@@ -776,71 +797,73 @@ function XMLSource(inp) {
 function XMLResult(out) {
 	if (out instanceof javax.xml.transform.Result) {
 		return out;
-	} else if (out instanceof Packages.org.w3c.dom.Document) {
-		return new javax.xml.transform.dom.DOMResult(out);
 	} else {
-		out = new BufferedOutputStream(outStream(out));
-		return new javax.xml.transform.stream.StreamResult(out);
-	}
+		if (out instanceof Packages.org.w3c.dom.Document) {
+			return new javax.xml.transform.dom.DOMResult(out);
+		} else {
+			out = new BufferedOutputStream(outStream(out));
+			return new javax.xml.transform.stream.StreamResult(out);
+        }
+    }
 }
 
 /**
- * Perform XSLT transform 
+ * Perform XSLT transform
  *
  * @param inp Input XML to transform (URL, File or InputStream)
  * @param style XSL Stylesheet to be used (URL, File or InputStream). optional.
  * @param out Output XML (File or OutputStream
  */
 function XSLTransform(inp, style, out) {
-	switch (arguments.length) {
-	case 2:
-		inp = arguments[0];
-		out = arguments[1];
-		break;
-	case 3:
-		inp = arguments[0];
-		style = arguments[1];
-		out = arguments[2];
-		break;
-	default:
-		window.println("XSL tranform requires 2 or 3 arguments");
-		return;
-	}
+    switch (arguments.length) {
+        case 2:
+            inp = arguments[0];
+            out = arguments[1];
+            break;
+        case 3:
+            inp = arguments[0];
+            style = arguments[1];
+            out = arguments[2];
+            break;
+        default:
+            window.println("XSL tranform requires 2 or 3 arguments");
+            return;
+    }
 
-	var factory = javax.xml.transform.TransformerFactory.newInstance();
-	var tranformer;
-	if (style) {		
-		transformer = factory.newTransformer(XMLSource(style));	
-	} else {
-		transformer = factory.newTransformer();
-	}
-	var source = XMLSource(inp);
-	var result = XMLResult(out);
-	transformer.transform(source, result);
-	if (source.getInputStream) {
-		streamClose(source.getInputStream());
-	}
-	if (result.getOutputStream) {
-		streamClose(result.getOutputStream());
-	}
+    var factory = javax.xml.transform.TransformerFactory.newInstance();
+    var tranformer;
+    if (style) {
+        transformer = factory.newTransformer(XMLSource(style));
+    } else {
+        transformer = factory.newTransformer();
+    }
+    var source = XMLSource(inp);
+    var result = XMLResult(out);
+    transformer.transform(source, result);
+    if (source.getInputStream) {
+        streamClose(source.getInputStream());
+    }
+    if (result.getOutputStream) {
+        streamClose(result.getOutputStream());
+    }
 }
 
 // miscellaneous utilities
 
 /**
- * Prints which command is selected from PATH 
+ * Prints which command is selected from PATH
  *
  * @param cmd name of the command searched from PATH
  */
 function which(cmd) {
-	var st = new java.util.StringTokenizer(env.PATH, File.pathSeparator);
-	while (st.hasMoreTokens()) {
-		var file = new File(st.nextToken(), cmd);
-		if (file.exists()) {
-			window.println(file.getAbsolutePath());
-			return;
-		}
-	}
+    var st = new java.util.StringTokenizer(env.PATH, File.pathSeparator);
+    while (st.hasMoreTokens()) {
+        var file = new File(st.nextToken(), cmd);
+        if (file.exists()) {
+            window.println(file.getAbsolutePath());
+            return;
+        }
+    }
 }
 
 /**
@@ -849,10 +872,10 @@ function which(cmd) {
  * @param name domain name
  */
 function ip(name) {
-	var addrs = InetAddress.getAllByName(name);	
-	for (var i in addrs) {
-		window.println(addrs[i]);
-	}
+    var addrs = InetAddress.getAllByName(name);
+    for (var i in addrs) {
+        window.println(addrs[i]);
+    }
 }
 ip.docString = "Prints IP addresses of given domain name";
 
@@ -860,31 +883,31 @@ ip.docString = "Prints IP addresses of given domain name";
  * Prints current date in current locale
  */
 function date() {
-	window.println(new Date().toLocaleString());
+    window.println(new Date().toLocaleString());
 }
 
 /**
  * Echoes the given string arguments
  */
 function echo(x) {
-	for (var i = 0; i < arguments.length; i++) {
-		window.println(arguments[i]);
-	}
+    for (var i = 0; i < arguments.length; i++) {
+        window.println(arguments[i]);
+    }
 }
 
 /**
- * This is C-like printf 
+ * This is C-like printf
  *
  * @param format string to format the rest of the print items
  * @param args variadic argument list
  */
-function printf(format, args/*, more args*/) {	
-	var array = java.lang.reflect.Array.newInstance(java.lang.Object, 
-			arguments.length - 1);
-	for (var i = 0; i < array.length; i++) {
-		array[i] = arguments[i+1];
-	}
-	return java.lang.System.out.printf(format, array);
+function printf(format, args/*, more args*/) {
+    var array = java.lang.reflect.Array.newInstance(java.lang.Object,
+        arguments.length - 1);
+    for (var i = 0; i < array.length; i++) {
+        array[i] = arguments[i + 1];
+    }
+    return java.lang.System.out.printf(format, array);
 }
 
 /**
@@ -894,24 +917,26 @@ function printf(format, args/*, more args*/) {
  * @param multiline to tell whether to read single line or multiple lines
  */
 function read(prompt, multiline) {
-	if (!prompt) {
-		prompt = '>';
-	}	
-	var inp = java.lang.System["in"];
-	var reader = new BufferedReader(new InputStreamReader(inp));
-	if (multiline) {
-		var line = '';
-		while (true) {
-			java.lang.System.err.print(prompt);
-			java.lang.System.err.flush();
-			var tmp = reader.readLine();
-			if (tmp == '' || tmp == null) break;
-			line += tmp + '\n';
-		}
-		return line;
-	} else {
-		java.lang.System.err.print(prompt);
-		java.lang.System.err.flush();	
-		return reader.readLine();
-	}
+    if (!prompt) {
+        prompt = '>';
+    }
+    var inp = java.lang.System["in"];
+    var reader = new BufferedReader(new InputStreamReader(inp));
+    if (multiline) {
+        var line = '';
+        while (true) {
+            java.lang.System.err.print(prompt);
+            java.lang.System.err.flush();
+            var tmp = reader.readLine();
+			if (tmp == '' || tmp == null) {
+				break;
+            }
+            line += tmp + '\n';
+        }
+        return line;
+    } else {
+        java.lang.System.err.print(prompt);
+        java.lang.System.err.flush();
+        return reader.readLine();
+    }
 }

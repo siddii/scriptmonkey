@@ -347,11 +347,15 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
     protected class InterruptibleScriptTaskImpl implements InterruptibleScriptTask {
         protected Thread scriptSafetyNet;
         protected ScriptProcessorPrinter printer;
+        protected ScriptProcessorCallback callback = null;
         protected long interrupWaitMillis;
+        protected boolean inCancel = false;
+        protected boolean cancelFailed = false;
 
-        InterruptibleScriptTaskImpl(ScriptProcessorPrinter printer, Thread scriptSafetyNet) {
+        InterruptibleScriptTaskImpl(ScriptProcessorCallback callback, Thread scriptSafetyNet) {
             this.scriptSafetyNet = scriptSafetyNet;
-            this.printer = printer;
+            this.printer = callback;
+            this.callback = callback;
             this.interrupWaitMillis = 2000;
         }
 
@@ -375,13 +379,15 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
         }
 
         public void cancel() {
-            // vsch: give it 2 second to terminate gracefully then kill it
+            // vsch: give it interruptWaitMillis to terminate gracefully then kill it
             // signal interruption to give it a chance to gracefully terminate which the JS script can
             // test for the interrupt using: if (java.lang.Thread.interrupted())
-            if (scriptSafetyNet == null) return;
+            if (scriptSafetyNet == null || inCancel) return;
+
+            inCancel = true;
 
             if (!scriptSafetyNet.isInterrupted()) {
-                if (printer != null) printer.println("Attempting to interrupt script thread.");
+                if (printer != null) printer.progressln("Attempting to interrupt script thread.");
                 scriptSafetyNet.interrupt();
 
                 // let it try and catch this one
@@ -391,61 +397,79 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
             Executors.newCachedThreadPool().submit(new Runnable() {
                 @Override
                 public void run() {
-                    boolean firstWait = true;
-                    for (long i = 0; i < interrupWaitMillis; i += 100) {
-                        if (!scriptSafetyNet.isAlive()) break;
-                        if (firstWait && printer != null) {
-                            printer.println("Waiting for thread to respond to interrupt...");
-                            firstWait = false;
+                    try {
+                        if (!cancelFailed) {
+                            boolean firstWait = true;
+                            for (long i = 0; i < interrupWaitMillis; i += 100) {
+                                if (!scriptSafetyNet.isAlive()) break;
+                                if (firstWait && printer != null) {
+                                    printer.progressln("Waiting for thread to respond to interrupt...");
+                                    firstWait = false;
+                                }
+
+                                try {
+                                    Thread.sleep(100);
+                                } catch (InterruptedException e) {
+                                    // we'll finish soon enough
+                                }
+                            }
                         }
-
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            // we'll finish soon enough
-                        }
-                    }
-
-                    if (scriptSafetyNet.isAlive()) {
-                        // vsch: we have to take more extreme measures it is stuck in a tight loop and not responding
-                        // javadocs say don't use Thread.stop blah, blah, blah, but it is the only thing that works
-                        // which does not require the cooperation of the running thread. Programming is not always a
-                        // gentleman's tea party and you need the ability to boot misbehaving code.
-                        if (printer != null) printer.println("Script thread is not responding. Stopping thread...");
-
-                        scriptSafetyNet.stop(); // that'll learn ya
-                        Thread.yield();
-                        if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
-                        Thread.yield();
-                        if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
-                        Thread.yield();
-                        if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
-                        Thread.yield();
-                        if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
-                        Thread.yield();
-                        if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
 
                         if (scriptSafetyNet.isAlive()) {
-                            // this one is a hard one
-                            scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
-                            Thread.yield();
-                            scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
-                            Thread.yield();
-                            scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
-                            Thread.yield();
-                            scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
-                            Thread.yield();
-                            scriptSafetyNet.stop(); // if not then maybe, this'll learn ya
-                        }
+                            // vsch: we have to take more extreme measures it is stuck in a tight loop and not responding
+                            // javadocs say don't use Thread.stop blah, blah, blah, but it is the only thing that works
+                            // which does not require the cooperation of the running thread. Programming is not always a
+                            // gentleman's tea party and you need the ability to boot misbehaving code. Especially one that
+                            // goes into an infinite loop
+                            // vsch: just one stop is not enough. If javascript catches() the exception then it also
+                            // catches java.lang.ThreadDeath and continues running here is the JavaScript that manages to survive
+                            // while (true) { try { java.lang.Thread.sleep(n); } catch (e) { } } // where n=0,1
+                            // BTW, this was the most optimal configuration found by trial and error that will terminate
+                            // this kind of script 'most' of the time withing a few loops, but sometimes you need to press
+                            // stop one more time.
+                            if (printer != null)
+                                printer.progressln("Script thread is not responding. Stopping thread...");
 
-                        // vsch: just one stop is not enough. If javascript catches() the exception (with a twist) then it also
-                        // catches java.lang.ThreadDeath and continues running here is the JavaScript that manages to survive
-                        // a single thread death:
-                        // while(true) { try { java.lang.Thread.sleep(100); } catch (e) {  } }
-                        // this one is unstoppable. If there is no processing in the catch() block then it will manage
-                        // to handle multiple consecutive stops and keep going.
-                        // however, the second one catches it in its exception handler (I'm guessing) and causes the thread
-                        // to terminate. Talk about 9 lives.
+                            int i = 0;
+                            long delay = 0;
+                            long lastDelay = 0;
+                            for (i = 0; i < 20 && scriptSafetyNet.isAlive(); i++) {
+                                try {
+                                    scriptSafetyNet.stop();
+                                    Thread.yield();
+                                    if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop();
+                                    Thread.sleep(0);
+                                    if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop();
+                                    Thread.sleep(1);
+                                    if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop();
+                                    Thread.sleep(2);
+                                    if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop();
+                                    Thread.sleep(3);
+                                    if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop();
+                                    Thread.sleep(4);
+                                    if (scriptSafetyNet.isAlive()) scriptSafetyNet.stop();
+                                    Thread.sleep(delay += lastDelay = (long) (5 + i + 5 * Math.random()));
+                                } catch (Throwable e) {
+                                    break;
+                                }
+                            }
+
+                            logger.info("Stop loop executed " + String.valueOf(i) + " times, last delay " + String.valueOf(lastDelay) + " avg delay " + (i > 0 ? String.valueOf(delay / i) : ""));
+                        }
+                    } finally {
+                        Thread.yield();
+
+                        if (!scriptSafetyNet.isAlive()) {
+                            logger.info("cancel calling done");
+                            if (callback != null) callback.done();
+                            // leave inCancel on so that done does not get called, just in case finally execution is pending
+                        }
+                        else {
+                            inCancel = false;
+                            cancelFailed = true;
+                            if (printer != null)
+                                printer.progressln("Script thread is still alive. Press stop to try again. Nothing lives forever.");
+                        }
                     }
                 }
             });
@@ -488,6 +512,11 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
                                 callback.success();
                             } catch (Throwable e) {
                                 callback.failure(e);
+                            } finally {
+                                if (!scriptSafetyNet.inCancel) {
+                                    logger.info("finally calling done");
+                                    callback.done();
+                                }
                             }
                         }
                     }));

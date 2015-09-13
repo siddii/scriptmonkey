@@ -19,7 +19,6 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.UserDataHolderEx;
 import com.intellij.util.Processor;
-import com.intellij.util.Time;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
@@ -38,12 +36,13 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
     private final UserDataHolderEx delegateUserDataHolderEx;
     private final Project project;
     private final ScriptShellPanel scriptShellPanel;
-    private int updating;
-    private StringBuilder batchedText;
+    private volatile int updating;
+    private volatile StringBuilder batchedText;
     private boolean batchedReplace;
     private boolean batchHadOutput;
     private boolean hadOutput;
     private ArrayList<Boolean> batchHadOutputStack = new ArrayList<Boolean>(10);
+
     private long lastOutputTime;
 
     public CommandShellDocument(Document delegate, ScriptShellPanel scriptShellPanel) {
@@ -60,9 +59,37 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
         this.lastOutputTime = System.currentTimeMillis();
     }
 
+    protected String repeat(String s, int count) {
+        StringBuilder stringBuilder = new StringBuilder(count*s.length());
+        while (count-- > 0) stringBuilder.append(s);
+        return stringBuilder.toString();
+    }
+
+    protected void logStackTrace(String prefix) {
+        //StackTraceElement[] traceElements = Thread.currentThread().getStackTrace();
+        //int skip = 2;
+        //String className = getClass().toString().substring(6);
+        //String name = traceElements[3].getClassName();
+        //if (name.equals(className)) {
+        //    skip++;
+        //}
+        //String msg = traceElements[skip].getMethodName() + ((prefix != null) ? "(" + prefix + "): " : ": ");
+        //msg += repeat(" ", 20-msg.length());
+        //String spc = repeat(" ", msg.length() + 5);
+        //String spcThis = "";
+        //skip++;
+        //for (StackTraceElement traceElement : traceElements) {
+        //    if (skip-- > 0) continue;
+        //    if (!traceElement.getClassName().startsWith("com.boxysystems")) continue;
+        //    msg += spcThis + traceElement.getMethodName() + " at " + traceElement.getFileName() + ":" + traceElement.getLineNumber() + "\n";
+        //    spcThis = spc;
+        //}
+        //logger.info(msg);
+    }
+
     public void beginUpdate() {
-        // TODO: make document updates handle setting readonly
-        //        editor.getDocument().setReadOnly(false);
+        logStackTrace(String.valueOf(updating));
+
         if (updating == 0) {
             batchedReplace = false;
             lastOutputTime = System.currentTimeMillis();
@@ -77,13 +104,17 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
     }
 
     public void endUpdate() {
-        endUpdate(false);
+        endUpdate(false, false);
     }
 
-    public void endUpdate(boolean forceEOL) {
-        // TODO: make document updates handle setting readonly
-        //        editor.getDocument().setReadOnly(true);
+    public void endUpdateAndFlush() {
+        endUpdate(false, true);
+    }
+
+    public void endUpdate(boolean forceEOL, boolean flush) {
+        logStackTrace(String.valueOf(updating-1));
         if (updating != 0) {
+
             if (forceEOL && batchHadOutput) {
                 // see if output needs to end in EOL
                 if (batchedText.length() > 0 && batchedText.charAt(batchedText.length() - 1) != '\n') {
@@ -104,6 +135,9 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
             }
             else {
                 // recall the previous level hadOutput flag and combine with this one if it was not reset
+                if (flush) {
+                    flushBatchedText();
+                }
                 batchHadOutput |= batchHadOutputStack.remove(batchHadOutputStack.size() - 1);
                 updating--;
             }
@@ -114,6 +148,10 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
         return updating != 0;
     }
 
+    public boolean isUpdating(int updateCount) {
+        return updating > updateCount;
+    }
+
     public boolean hadOutput() {
         return hadOutput;
     }
@@ -122,13 +160,14 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
         if (batchedText != null) {
             final StringBuilder text = batchedText;
             final boolean isReplace = batchedReplace;
-            final int offset = delegateDocumentEx.getTextLength();
-            final boolean hadEOL = batchedText.length() > 0 && batchedText.charAt(batchedText.length() - 1) == '\n';
             batchedText = null;
 
             runWriteAction(new Runnable() {
                 @Override
                 public void run() {
+                    final int offset = delegateDocumentEx.getTextLength();
+                    final boolean hadEOL = text.length() > 0 && text.charAt(text.length() - 1) == '\n';
+
                     if (isReplace) delegateDocumentEx.replaceString(0, offset, text);
                     else delegateDocumentEx.insertString(offset, text);
                     int textLength = delegateDocumentEx.getTextLength();
@@ -165,6 +204,13 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
             hadOutput = batchHadOutput = true;
     }
 
+    protected void flushBatchedText() {
+        // time to flush the batch
+        lastOutputTime = System.currentTimeMillis();
+        applyBatchedText(false);
+        batchedText = new StringBuilder();
+    }
+
     public void safeInsertString(final int offset, String text) {
         // vsch: replace all \r\n and \r by \n, otherwise we get assertion failures
         if (text.contains("\r")) {
@@ -178,10 +224,7 @@ public class CommandShellDocument implements DocumentEx, UserDataHolderEx {
             // can batch it but don't wait forever, see when the last update took place and flush the batch
             appendBatchedText(text);
             if (lastOutputTime + 100 < System.currentTimeMillis()) {
-                // time to flush the batch
-                lastOutputTime = System.currentTimeMillis();
-                applyBatchedText(false);
-                batchedText = new StringBuilder();
+                flushBatchedText();
             }
         }
         else {

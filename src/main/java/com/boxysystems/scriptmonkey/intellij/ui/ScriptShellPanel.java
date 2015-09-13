@@ -124,17 +124,13 @@ public class ScriptShellPanel extends JPanel implements ScriptProcessorPrinter {
     }
 
     public void clear(boolean prompt) {
-        // TODO: make document updates handle setting readonly
-        //        editor.getDocument().setReadOnly(false);
-        getDocument().beginUpdate();
-        CommandShellDocument d = (CommandShellDocument) editor.getDocument();
+        CommandShellDocument d = getDocument();
+        d.beginUpdate();
         d.clear();
         if (prompt) {
             printPrompt();
         }
-        // TODO: make document updates handle setting readonly
-        //        editor.getDocument().setReadOnly(true);
-        getDocument().endUpdate();
+        d.endUpdate();
         // this is done automatically after bulk update
         // setMark();
         requestFocus();
@@ -166,6 +162,26 @@ public class ScriptShellPanel extends JPanel implements ScriptProcessorPrinter {
     }
 
     @Override
+    public void progressln(String s) {
+        CommandShellDocument d = getDocument();
+        d.beginUpdate();
+        d.appendString(s + "\n");
+        d.endUpdateAndFlush();
+    }
+
+    @Override
+    public void startProgress() {
+        CommandShellDocument d = getDocument();
+        d.beginUpdate();
+    }
+
+    @Override
+    public void endProgress() {
+        CommandShellDocument d = getDocument();
+        d.endUpdateAndFlush();
+    }
+
+    @Override
     public boolean hadOutput() {
         return getDocument().hadOutput();
     }
@@ -181,15 +197,11 @@ public class ScriptShellPanel extends JPanel implements ScriptProcessorPrinter {
     }
 
     public Object executeCommand(String cmd, int lineOffset, int firstLineColumnOffset) {
-        // TODO: make document updates handle setting readonly
-        //        editor.getDocument().setReadOnly(false);
         getDocument().beginUpdate();
         StopScriptAction stopScriptAction = getStopScriptAction();
         stopScriptAction.setEnabled(true);
         Object result = shellCommandProcessor.executeCommand(cmd, lineOffset, firstLineColumnOffset, stopScriptAction, this);
         stopScriptAction.setEnabled(false);
-        // TODO: make document updates handle setting readonly
-        //        editor.getDocument().setReadOnly(true);
         getDocument().endUpdate();
         return result;
     }

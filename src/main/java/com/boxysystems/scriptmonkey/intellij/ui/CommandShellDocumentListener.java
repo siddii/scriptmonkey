@@ -24,6 +24,14 @@ public class CommandShellDocumentListener implements DocumentListener {
     public void beforeDocumentChange(DocumentEvent e) {
     }
 
+    protected boolean allWhiteSpace(String text) {
+        int iMax = text.length();
+        for (int i = 0; i < iMax; i++) {
+            if (text.charAt(i) != ' ' && text.charAt(i) != '\n') return false;
+        }
+        return true;
+    }
+
     @Override
     public void documentChanged(DocumentEvent e) {
         final CommandShellDocument document = scriptShellPanel.getDocument();
@@ -52,12 +60,10 @@ public class CommandShellDocumentListener implements DocumentListener {
             final int firstLineColumnOffset = document.getMarkColumn();
 
             // Handle multi-line input
-            if ((cmd.length() == 0) || !cmd.endsWith("\\\n")) {
+            if (!allWhiteSpace(cmd) && !cmd.endsWith("\\\n")) {
                 // Trim "\\n" combinations
                 final String cmdTrimmed = trimContinuations(cmd);
 
-                // TODO: make document updates handle setting readonly
-                //        editor.getDocument().setReadOnly(false);
                 document.beginUpdate();
 
                 // this needs to be done in a separate thread not to lockup the ui
@@ -65,14 +71,33 @@ public class CommandShellDocumentListener implements DocumentListener {
                     public void run() {
                         // make sure if script output any text to the window, it is terminated by \n
                         document.beginUpdate();
-                        final Object result = scriptShellPanel.executeCommand(cmdTrimmed, startLine, firstLineColumnOffset);
-                        document.endUpdate(true);
+                        scriptShellPanel.executeCommand(cmdTrimmed, startLine, firstLineColumnOffset);
+                        document.endUpdate(true, false);
+
+                        logger.debug("waiting for update to be done");
+                        while (document.isUpdating(1)) {
+                            try {
+                                Thread.sleep(10);
+                            } catch (InterruptedException e1) {
+                            }
+                        }
+                        logger.debug("update is done");
 
                         scriptShellPanel.printPrompt();
-                        // TODO: make document updates handle setting readonly
-                        //        editor.getDocument().setReadOnly(true);
                         document.endUpdate();
                         //logger.error("mark: " + document.getMarkOffset() + ", textLength: " + document.getTextLength());
+                    }
+                });
+            }
+            else {
+                // just append prompt
+                final String finalCmd = cmd;
+                Executors.newCachedThreadPool().execute(new Runnable() {
+                    public void run() {
+                        document.beginUpdate();
+                        if (finalCmd.length() > 1) scriptShellPanel.print(finalCmd);
+                        scriptShellPanel.printPrompt();
+                        document.endUpdate();
                     }
                 });
             }
