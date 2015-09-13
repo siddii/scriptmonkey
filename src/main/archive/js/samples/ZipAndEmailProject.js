@@ -1,7 +1,6 @@
 var mailApiPkgs = new JavaImporter(java.lang, java.util, java.io, javax.mail, javax.mail.internet);
 
-with (mailApiPkgs)
-{
+with (mailApiPkgs) {
 
     function sendFile() {
         echo("Sending file...");
@@ -33,7 +32,6 @@ with (mailApiPkgs)
 
             mbp2.attachFile(filename);
 
-
             var mp = new MimeMultipart();
             mp.addBodyPart(mbp1);
             mp.addBodyPart(mbp2);
@@ -44,7 +42,8 @@ with (mailApiPkgs)
 
             Transport.send(msg);
 
-        } catch (e){
+        }
+        catch (e) {
             echo(e);
         }
 

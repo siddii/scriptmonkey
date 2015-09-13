@@ -9,45 +9,44 @@
     <description>
     <![CDATA[
         <p>
-            <b>Script Monkey</b> breaks the boundaries of Java and helps Java achieve the power & flexibilities of
-            interpreted/dynamic languages. In other words, it helps Java achieve the best of both worlds.
-        </p>
-        <p>
-            Thanks to the embedded <b>Rhino</b> & <b>Scripting API</b> for being part of Java since v1.6.
-            It's an <b>all-in-one</b> plugin which means, anything that was possible only by writing a plugin can be
-            done using
-            <b>plugin-scripts(simple javascript code)</b>. And, any tasks that makes more sense to be scripted can be
-            implemented using this tool.<br/>
-        </p>
-        <p>
+            <b>Script Monkey</b> breaks the boundaries of Java and helps Java achieve the power & flexibilities of interpreted/dynamic languages. In other words, it helps Java achieve the best of both worlds.
+        </p><p>
+            Thanks to the embedded <b>Nashorn</b> & <b>Scripting API</b> it's an
+            <b>all-in-one</b> plugin which means, anything that was possible only by writing a plugin can be done using
+            <b>plugin-scripts(simple javascript code)</b>. Any tasks that makes more sense to be scripted can be implemented
+            using this tool.<br/>
+        </p><p>
             Instead of explaining what this plugin can do in words, we wanted to show some in action.
         <ol>
             <li><a href="http://scriptmonkey.boxysystems.com/demos/HelloRhino/HelloRhino.htm">Say 'Hello' to Rhino</a>
             </li>
-            <li><a href="http://scriptmonkey.boxysystems.com/demos/CommandShell/CommandShell.htm">Let's do some command
-                shell scripting</a></li>
-            <li><a href="http://scriptmonkey.boxysystems.com/demos/TimebarPluginScript/TimebarPluginScript.htm">Timebar
-                plugin script</a></li>
-        </ol>
-        </p>
-        <p>
+            <li>
+                <a href="http://scriptmonkey.boxysystems.com/demos/CommandShell/CommandShell.htm">Let's do some command shell scripting</a>
+            </li>
+            <li>
+                <a href="http://scriptmonkey.boxysystems.com/demos/TimebarPluginScript/TimebarPluginScript.htm">Timebar plugin script</a>
+            </li>
+        </ol></p><p>
             Getting Started
         <ul>
-            <li><a href="http://code.google.com/p/scriptmonkey/wiki/HowScriptMonkeyWorks">How "Script Monkey" IntelliJ
-                plugin works?</a></li>
-            <li><a href="http://code.google.com/p/scriptmonkey/wiki/HowToWritePluginScripts">How to write plugin
-                scripts?</a></li>
-        </ul>
-        </p>
-        For the latest information & documentations, please visit the <a href="http://code.google.com/p/scriptmonkey/">project's
-            homepage</a>
+            <li>
+                <a href="http://code.google.com/p/scriptmonkey/wiki/HowScriptMonkeyWorks">How "Script Monkey" IntelliJ plugin works?</a>
+            </li>
+            <li>
+                <a href="http://code.google.com/p/scriptmonkey/wiki/HowToWritePluginScripts">How to write plugin scripts?</a>
+            </li>
+        </ul></p>For the latest information & documentations, please visit the <a
+                href="https://github.com/siddii/scriptmonkey">project's homepage on GitHub</a>
         ]]>
   </description>
-    <version>1.2.8</version>
+    <version>1.2.9</version>
     <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
     <idea-version since-build="141.1550"/>
 
     <change-notes><![CDATA[
+      <ul><u>Version 1.2.9 changes:</u>
+        <li>Change tweaked script thread stop to be more reliable for the most difficult scripts to abort.</li>
+      </ul>
       <ul><u>Version 1.2.8 changes:</u>
         <li>Fix missing scripts jar for component initialization of the scripts directory under build 142.x of IDEs.</li>
         <li>Change script panels now re-use command processor between runs and enable the interactive prompt so that globals can be examined after script is evaluated to ease debugging.</li>

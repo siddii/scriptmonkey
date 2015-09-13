@@ -1,21 +1,21 @@
 var toolsPkgs = new JavaImporter(com.intellij.openapi.application,
-                                 com.intellij.openapi.project,
-                                 com.intellij.openapi.wm,
-                                 com.intellij.openapi.actionSystem,
-                                 com.intellij.openapi.fileEditor,
-                                 com.intellij.openapi.vfs);
+    com.intellij.openapi.project,
+    com.intellij.openapi.wm,
+    com.intellij.openapi.actionSystem,
+    com.intellij.openapi.fileEditor,
+    com.intellij.openapi.vfs);
 
 with (toolsPkgs) {
 
-    var editors = new Array("editplus", "textpad", "notepad", "gedit", "kedit");
+    var editors = ["editplus", "textpad", "notepad", "gedit", "kedit"];
 
-    var firefoxActionCallableObj = new Object();
-    firefoxActionCallableObj.actionPerformed = function(anActionEvent) {
+    var firefoxActionCallableObj = {};
+    firefoxActionCallableObj.actionPerformed = function (anActionEvent) {
         exec("firefox");
-    }
+    };
 
-    var editorActionCallableObj = new Object();
-    editorActionCallableObj.actionPerformed = function(anActionEvent) {
+    var editorActionCallableObj = {};
+    editorActionCallableObj.actionPerformed = function (anActionEvent) {
         for (var i = 0; i < editors.length; i++) {
             var command = commandExist(editors[i]);
             if (command != "") {
@@ -27,9 +27,9 @@ with (toolsPkgs) {
             }
         }
         alert("No suitable editors found!");
-    }
+    };
 
-    editorActionCallableObj.update = function(anActionEvent) {
+    editorActionCallableObj.update = function (anActionEvent) {
         var presentation = anActionEvent.getPresentation();
 
         var currentProject = getProject(anActionEvent);
@@ -41,33 +41,31 @@ with (toolsPkgs) {
         else {
             presentation.setEnabled(false);
         }
-    }
+    };
 
-    var backupActionCallableObj = new Object();
-    backupActionCallableObj.actionPerformed = function(anActionEvent) {
+    var backupActionCallableObj = {};
+    backupActionCallableObj.actionPerformed = function (anActionEvent) {
         var currentProject = getProject(anActionEvent);
         backupProjectFolder(currentProject);
-    }
+    };
 
     function commandExist(cmd) {
         var st = new java.util.StringTokenizer(env.PATH, File.pathSeparator);
         while (st.hasMoreTokens()) {
             var file = new File(st.nextToken(), cmd);
             if (file.exists()) {
-                return(file.getAbsolutePath());
+                return (file.getAbsolutePath());
             }
         }
         return "";
     }
-
 
     function getProject(anActionEvent) {
         return DataKeys.PROJECT.getData(anActionEvent.getDataContext());
     }
 
     function backupProjectFolder(project) {
-        try
-        {
+        try {
             var windowManager = WindowManager.instance;
             var statusBar = windowManager.getStatusBar(project);
 
@@ -81,17 +79,15 @@ with (toolsPkgs) {
             statusBar.setInfo("Backing up '" + projectBaseDir + "' to '" + backupFile + "' ...");
             outputStream = new java.util.zip.ZipOutputStream(new java.io.FileOutputStream(backupFile));
 
-            var fileFilter = new java.io.FileFilter()
-            {
-                accept: function(pathname) {
+            var fileFilter = new java.io.FileFilter() {
+                accept: function (pathname) {
                     return true;
                 }
-            };
-
+            }
             com.intellij.util.io.ZipUtil.addDirToZipRecursively(outputStream, backupFile, projectBaseDir, projectBaseDir.getName(), fileFilter, new java.util.HashSet());
             alert("Project backed up successfully at '" + backupFile + "'");
         }
-        catch(e) {
+        catch (e) {
             alert("Error while backing up project : " + e);
         }
         finally {
@@ -101,7 +97,6 @@ with (toolsPkgs) {
             }
         }
     }
-
 
     function main() {
 

@@ -22,7 +22,7 @@ import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.HashSet;
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -33,10 +33,11 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 public class ScriptMonkeyApplicationComponent implements ApplicationComponent, Configurable {
-    private static final Logger logger = Logger.getLogger(ScriptMonkeyApplicationComponent.class);
+    private static final Logger logger = Logger.getLogger("com.boxysystems.scriptmonkey");
 
     private ScriptMonkeyConfigurationForm form = null;
     private ScriptMonkeySettings settings = null;
@@ -45,6 +46,17 @@ public class ScriptMonkeyApplicationComponent implements ApplicationComponent, C
     private HashSet<String> augmentedLibraries = new HashSet<String>();
 
     public ScriptMonkeyApplicationComponent() {
+        ConsoleAppender appender = new ConsoleAppender(new PatternLayout("%p %m%n"));
+        Enumeration<Appender> appenders = Logger.getRootLogger().getAllAppenders();
+        while (appenders.hasMoreElements()) {
+            Appender app = appenders.nextElement();
+            String name = app.getName();
+            int tmp = 0;
+        }
+        logger.addAppender(appender);
+        logger.setAdditivity(false);
+        logger.setLevel(Level.INFO);
+
         // add nashorn to the lib dirs of our plugin class loader
         PluginClassLoader pluginClassLoader = (PluginClassLoader) getClass().getClassLoader();
         String javaHome = System.getProperties().getProperty("java.home");
@@ -65,6 +77,10 @@ public class ScriptMonkeyApplicationComponent implements ApplicationComponent, C
         }
     }
 
+    // vsch: TODO: need to write a ClassLoader that will use the pluginClassLoader as parent and implement the needed
+    // loading of project and module libraries. The global ones can be added to pluginClassLoader.
+    // at the moment everything is added into the pluginClassLoader and that may cause problems if multiple projects are
+    // open and each uses its own libraries with overlapping class names.
     public void augmentClassLoader(Project project) {
         try {
             PluginClassLoader pluginClassLoader = (PluginClassLoader) getClass().getClassLoader();

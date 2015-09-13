@@ -91,13 +91,33 @@ public class PluginScriptRunner {
         }
 
         @Override
+        public void done() {
+
+        }
+
+        @Override
         public void println(String msg) {
+            logger.warn(msg);
+        }
+
+        @Override
+        public void progressln(String msg) {
             logger.warn(msg);
         }
 
         @Override
         public boolean hadOutput() {
             return false;
+        }
+
+        @Override
+        public void startProgress() {
+
+        }
+
+        @Override
+        public void endProgress() {
+
         }
     }
 }

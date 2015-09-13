@@ -16,11 +16,13 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.content.Content;
 import com.intellij.util.PathUtil;
+import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.io.File;
 
 public class RunScriptAction extends ScriptShellPanelAction {
+    private static final Logger logger = Logger.getLogger(RunScriptAction.class);
 
     private JSFileFilter jsFileFilter = new JSFileFilter();
 
@@ -85,7 +87,8 @@ public class RunScriptAction extends ScriptShellPanelAction {
 
                     content = toolWindow.addContentPanel(contentName, panel);
                     commandProcessor.addGlobalVariable("window", panel);
-                } else {
+                }
+                else {
                     ScriptShellTabContent tabContent = (ScriptShellTabContent) content.getComponent();
                     panel = tabContent.getScriptShellPanel();
                     panel.toggleActions();
@@ -126,7 +129,6 @@ public class RunScriptAction extends ScriptShellPanelAction {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     panel.println("Successfully processed!");
-                    finishUp();
                 }
             });
         }
@@ -137,7 +139,23 @@ public class RunScriptAction extends ScriptShellPanelAction {
                 public void run() {
                     panel.println("Error running script ....");
                     panel.println(throwable.toString());
-                    finishUp();
+                }
+            });
+        }
+
+        @Override
+        public void done() {
+            logger.info("done called");
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        panel.getDocument().endUpdate(true, false);
+                        panel.printPrompt();
+                        panel.toggleActions();
+                        logger.info("done complete");
+                    }catch (Throwable e) {
+                        logger.info("done exception: " + e.getMessage());
+                    }
                 }
             });
         }
@@ -147,15 +165,24 @@ public class RunScriptAction extends ScriptShellPanelAction {
             panel.println(msg);
         }
 
-        public void finishUp() {
-            panel.getDocument().endUpdate(true);
-            panel.printPrompt();
-            panel.toggleActions();
+        @Override
+        public void progressln(String msg) {
+            panel.progressln(msg);
         }
 
         @Override
         public boolean hadOutput() {
             return panel.hadOutput();
+        }
+
+        @Override
+        public void startProgress() {
+            panel.startProgress();
+        }
+
+        @Override
+        public void endProgress() {
+            panel.endProgress();
         }
     }
 }

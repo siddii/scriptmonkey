@@ -9,4 +9,5 @@ package com.boxysystems.scriptmonkey.intellij.ui;
 public interface ScriptProcessorCallback extends ScriptProcessorPrinter {
     void success();
     void failure(Throwable throwable);
+    void done();
 }
