@@ -45,7 +45,7 @@
 
     <change-notes><![CDATA[
       <ul><u>Version 1.2.9 changes:</u>
-        <li>Change tweaked script thread stop to be more reliable for the most difficult scripts to abort.</li>
+        <li>Change tweaked script thread stop to be cleaner and more reliable for the most difficult scripts to abort.</li>
       </ul>
       <ul><u>Version 1.2.8 changes:</u>
         <li>Fix missing scripts jar for component initialization of the scripts directory under build 142.x of IDEs.</li>
