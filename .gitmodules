@@ -1,3 +1,6 @@
 [submodule "scriptmonkey.wiki"]
 	path = scriptmonkey.wiki
 	url = https://github.com/vsch/scriptmonkey.wiki.git
+[submodule "siddii.scriptmonkey.wiki"]
+	path = siddii.scriptmonkey.wiki
+	url = https://github.com/siddii/scriptmonkey.wiki.git
