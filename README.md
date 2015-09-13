@@ -26,7 +26,7 @@ Version 1.2.x WIP switch to Nashorn engine
 ---------------------
 The source is being reworked to be Nashorn compatible so this version is experimental. It works on IDEA CE 14 and 15 EAP. 
 
-**You no longer will need to run your IDEA under jdk 1.8** to do this you need to refer to the instructions [Selecting the JDK version the IDE will run under](https://intellij-support.jetbrains.com/hc/en-us/articles/206827547-Selecting-the-JDK-version-the-IDE-will-run-under).
+**You no longer will need to run your IDEA under jdk 1.8**, however if you do want to change the boot JDK you need to refer to the instructions [Selecting the JDK version the IDE will run under](https://intellij-support.jetbrains.com/hc/en-us/articles/206827547-Selecting-the-JDK-version-the-IDE-will-run-under).
 
 As of build **1.2.7** the plugin **works** with the **bundled** OpenJdk on OS X. So if you have the a release with bundled jdk 1.8 you should be able to use the plugin without modifying the boot jdk.  
 
