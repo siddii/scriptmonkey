@@ -7,6 +7,8 @@ Introduction
 rhino scripting in a *plugin* environment.
 In other words, it helps Java achieve the best of both worlds.
 
+Wiki pages migrated from Google Code to [GitHub Wiki](https://github.com/siddii/scriptmonkey/wiki).
+
 Thanks to the embedded Nashorn & Scripting API for being part of Java since v1.7. It's an all-in-one plugin which means, anything that was possible only by writing a plugin can be done using _plugin-scripts_(simple javascript code). And, any tasks that makes more sense to be scripted can be implemented using this tool.
 
 There are some differences between Rhino and Nashorn, see the [Rhino Migration Guide](https://wiki.openjdk.java.net/display/Nashorn/Rhino+Migration+Guide).
